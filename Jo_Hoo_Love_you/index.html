@@ -205,11 +205,12 @@
                 slot.className = 'slot';
                 if (char === " ") {
                     slot.style.border = 'none';
-                    slot.innerText = "\u00A0"; // 공백
+                    slot.innerText = "\u00A0"; // 공백 표시
                 } else if (char === ",") {
                     slot.innerText = ",";
                     slot.style.border = 'none';
                 }
+                // 글자가 아닌 특수문자(공백, 쉼표)는 미리 채워진 상태로 둠
                 slot.id = `slot-${index}`;
                 slotsContainer.appendChild(slot);
             });
