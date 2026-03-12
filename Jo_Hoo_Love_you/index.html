@@ -9,11 +9,12 @@
             --primary-pink: #ff8fab;
             --soft-pink: #ffc2d1;
             --heart-red: #ff4d6d;
+            --bg-color: #fff0f3;
         }
 
         body {
             font-family: 'Nanum Pen Script', 'Comic Sans MS', cursive;
-            background-color: #fff0f3;
+            background-color: var(--bg-color);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -21,6 +22,11 @@
             min-height: 100vh;
             margin: 0;
             overflow: hidden;
+            transition: background 1s ease;
+        }
+
+        body.winner {
+            background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
         }
 
         h1 {
@@ -28,6 +34,7 @@
             font-size: 2.5rem;
             margin-bottom: 30px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
         }
 
         #puzzle-container {
@@ -41,6 +48,14 @@
             box-shadow: 0 10px 30px rgba(255, 143, 171, 0.3);
             border: 4px solid var(--soft-pink);
             max-width: 90%;
+            z-index: 10;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .winner #puzzle-container {
+            transform: scale(1.1);
+            border-color: #ff4d6d;
+            box-shadow: 0 20px 50px rgba(255, 77, 109, 0.5);
         }
 
         .slots {
@@ -93,48 +108,62 @@
             background-color: #fb6f92;
         }
 
-        .letter-tile:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
-
         .letter-tile.used {
             opacity: 0.3;
             cursor: default;
             pointer-events: none;
         }
 
-        #message {
-            margin-top: 30px;
-            font-size: 1.5rem;
-            height: 40px;
-            color: var(--heart-red);
-            font-weight: bold;
+        /* Dramatic Success Message */
+        #success-banner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 50px 100px;
+            border-radius: 50px;
+            text-align: center;
+            z-index: 1000;
             opacity: 0;
-            transition: opacity 0.5s;
+            pointer-events: none;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 0 100px rgba(255, 77, 109, 0.5);
+            border: 10px solid var(--primary-pink);
         }
 
-        /* Celebration Effect */
-        .celebration {
+        #success-banner.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        #success-banner h2 {
+            font-size: 4rem;
+            color: var(--heart-red);
+            margin: 0;
+            animation: bounce 1s infinite;
+        }
+
+        #success-banner p {
+            font-size: 2rem;
+            color: #ff8fab;
+            margin: 10px 0 0 0;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Particle Canvas */
+        #canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
-            display: none;
-            z-index: 1000;
-        }
-
-        .heart-particle {
-            position: absolute;
-            font-size: 2rem;
-            animation: float-heart 3s linear forwards;
-        }
-
-        @keyframes float-heart {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+            z-index: 100;
         }
 
         .reset-btn {
@@ -146,81 +175,59 @@
             color: var(--heart-red);
             cursor: pointer;
             font-weight: bold;
-        }
-
-        .reset-btn:hover {
-            background: var(--primary-pink);
-            color: white;
-        }
-
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-
-        .congrats-text {
-            font-size: 3rem;
-            animation: pop 0.5s ease infinite;
+            z-index: 200;
         }
     </style>
 </head>
 <body>
 
-    <h1>💌 Puzzle for You</h1>
+    <canvas id="canvas"></canvas>
+
+    <h1 id="main-title">💌 Puzzle for You</h1>
 
     <div id="puzzle-container">
-        <!-- 글자가 들어갈 빈칸 -->
         <div class="slots" id="slots"></div>
-        
-        <!-- 섞여있는 글자 타일들 -->
         <div class="letters" id="letters"></div>
-
-        <div id="message">정답이에요! 축하합니다! 🎉</div>
-        <button class="reset-btn" onclick="initGame()">다시 하기</button>
+        <button class="reset-btn" onclick="location.reload()">다시 하기</button>
     </div>
 
-    <div class="celebration" id="celebration"></div>
+    <div id="success-banner">
+        <h2>Jo Hoo is the BEST! 👑</h2>
+        <p>세상에서 제일 멋진 조후님, 축하해요!</p>
+    </div>
 
     <script>
         const targetText = "Jo Hoo, Love you";
         const targetArray = targetText.split("");
-        let currentGuess = [];
-        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
         function initGame() {
             const slotsContainer = document.getElementById('slots');
             const lettersContainer = document.getElementById('letters');
-            const message = document.getElementById('message');
-            const celebration = document.getElementById('celebration');
             
             slotsContainer.innerHTML = '';
             lettersContainer.innerHTML = '';
-            message.style.opacity = '0';
-            celebration.style.display = 'none';
-            currentGuess = [];
 
-            // 빈칸 생성
             targetArray.forEach((char, index) => {
                 const slot = document.createElement('div');
                 slot.className = 'slot';
                 if (char === " ") {
                     slot.style.border = 'none';
-                    slot.innerText = "\u00A0"; // 공백 표시
+                    slot.innerText = "\u00A0";
                 } else if (char === ",") {
                     slot.innerText = ",";
                     slot.style.border = 'none';
                 }
-                // 글자가 아닌 특수문자(공백, 쉼표)는 미리 채워진 상태로 둠
                 slot.id = `slot-${index}`;
                 slotsContainer.appendChild(slot);
             });
 
-            // 글자 타일 생성 (공백과 쉼표 제외)
             const playableLetters = targetArray
                 .map((char, index) => ({ char, index }))
                 .filter(item => item.char !== " " && item.char !== ",");
 
-            // 타일 섞기
             const shuffledLetters = [...playableLetters].sort(() => Math.random() - 0.5);
 
             shuffledLetters.forEach((item) => {
@@ -233,7 +240,6 @@
         }
 
         function handleTileClick(tile, char) {
-            // 다음에 채워야 할 빈칸 찾기
             const nextEmptyIndex = targetArray.findIndex((c, i) => {
                 const slot = document.getElementById(`slot-${i}`);
                 return c !== " " && c !== "," && slot.innerText === "";
@@ -241,14 +247,11 @@
 
             if (nextEmptyIndex !== -1) {
                 const slot = document.getElementById(`slot-${nextEmptyIndex}`);
-                
-                // 정답 체크 (선택한 글자가 해당 위치의 정답인지)
                 if (char === targetArray[nextEmptyIndex]) {
                     slot.innerText = char;
                     tile.classList.add('used');
                     checkWin();
                 } else {
-                    // 틀렸을 때 살짝 흔들리는 효과
                     tile.style.backgroundColor = '#ff4d6d';
                     setTimeout(() => { tile.style.backgroundColor = ''; }, 300);
                 }
@@ -265,29 +268,87 @@
             }
         }
 
-        function showCelebration() {
-            const message = document.getElementById('message');
-            const celebration = document.getElementById('celebration');
-            message.style.opacity = '1';
-            celebration.style.display = 'block';
+        // Web Audio Fanfare
+        function playFanfare() {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const playNote = (freq, start, duration) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.1, start);
+                gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(start);
+                osc.stop(start + duration);
+            };
 
-            // 하트 팡팡 효과
-            for (let i = 0; i < 50; i++) {
-                setTimeout(() => {
-                    const heart = document.createElement('div');
-                    heart.className = 'heart-particle';
-                    heart.innerText = ['❤️', '💖', '💘', '💝', '✨'][Math.floor(Math.random() * 5)];
-                    heart.style.left = Math.random() * 100 + 'vw';
-                    heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
-                    heart.style.animationDuration = (Math.random() * 2 + 1) + 's';
-                    celebration.appendChild(heart);
-                    
-                    setTimeout(() => heart.remove(), 3000);
-                }, i * 100);
+            const now = audioCtx.currentTime;
+            playNote(261.63, now, 0.1); // C4
+            playNote(329.63, now + 0.15, 0.1); // E4
+            playNote(392.00, now + 0.3, 0.1); // G4
+            playNote(523.25, now + 0.45, 0.5); // C5
+        }
+
+        // Fireworks/Particle Animation
+        class Particle {
+            constructor() {
+                this.x = window.innerWidth / 2;
+                this.y = window.innerHeight / 2;
+                this.size = Math.random() * 15 + 5;
+                this.speedX = Math.random() * 10 - 5;
+                this.speedY = Math.random() * 10 - 5;
+                this.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                this.type = Math.random() > 0.5 ? 'heart' : 'star';
+                this.opacity = 1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.speedY += 0.1; // gravity
+                this.opacity -= 0.01;
+            }
+            draw() {
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+                ctx.font = `${this.size}px Arial`;
+                ctx.fillText(this.type === 'heart' ? '❤️' : '✨', this.x, this.y);
             }
         }
 
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, i) => {
+                p.update();
+                p.draw();
+                if (p.opacity <= 0) particles.splice(i, 1);
+            });
+            requestAnimationFrame(animate);
+        }
+
+        function showCelebration() {
+            document.body.classList.add('winner');
+            document.getElementById('success-banner').classList.add('show');
+            document.getElementById('main-title').style.transform = 'translateY(-200px)';
+            
+            playFanfare();
+            
+            // Create burst of particles
+            for(let i=0; i<150; i++) {
+                setTimeout(() => particles.push(new Particle()), Math.random() * 500);
+            }
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            animate();
+        }
+
         initGame();
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
     </script>
 </body>
 </html>
