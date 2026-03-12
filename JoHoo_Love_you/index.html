@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JoHoo, Love you Puzzle</title>
+    <style>
+        :root {
+            --primary-pink: #ff8fab;
+            --soft-pink: #ffc2d1;
+            --heart-red: #ff4d6d;
+        }
+
+        body {
+            font-family: 'Nanum Pen Script', 'Comic Sans MS', cursive;
+            background-color: #fff0f3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: var(--heart-red);
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #puzzle-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(255, 143, 171, 0.3);
+            border: 4px solid var(--soft-pink);
+            max-width: 90%;
+        }
+
+        .slots {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            min-height: 60px;
+            width: 100%;
+        }
+
+        .slot {
+            width: 50px;
+            height: 60px;
+            border-bottom: 3px solid var(--soft-pink);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: var(--heart-red);
+            font-weight: bold;
+        }
+
+        .letters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .letter-tile {
+            width: 50px;
+            height: 60px;
+            background-color: var(--primary-pink);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 0px #fb6f92;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .letter-tile:hover {
+            transform: scale(1.1);
+            background-color: #fb6f92;
+        }
+
+        .letter-tile:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .letter-tile.used {
+            opacity: 0.3;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        #message {
+            margin-top: 30px;
+            font-size: 1.5rem;
+            height: 40px;
+            color: var(--heart-red);
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        /* Celebration Effect */
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+        }
+
+        .heart-particle {
+            position: absolute;
+            font-size: 2rem;
+            animation: float-heart 3s linear forwards;
+        }
+
+        @keyframes float-heart {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        .reset-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: var(--soft-pink);
+            border: none;
+            border-radius: 20px;
+            color: var(--heart-red);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .reset-btn:hover {
+            background: var(--primary-pink);
+            color: white;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .congrats-text {
+            font-size: 3rem;
+            animation: pop 0.5s ease infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>💌 Puzzle for You</h1>
+
+    <div id="puzzle-container">
+        <!-- 글자가 들어갈 빈칸 -->
+        <div class="slots" id="slots"></div>
+        
+        <!-- 섞여있는 글자 타일들 -->
+        <div class="letters" id="letters"></div>
+
+        <div id="message">정답이에요! 축하합니다! 🎉</div>
+        <button class="reset-btn" onclick="initGame()">다시 하기</button>
+    </div>
+
+    <div class="celebration" id="celebration"></div>
+
+    <script>
+        const targetText = "JoHoo, Love you";
+        const targetArray = targetText.split("");
+        let currentGuess = [];
+        
+        function initGame() {
+            const slotsContainer = document.getElementById('slots');
+            const lettersContainer = document.getElementById('letters');
+            const message = document.getElementById('message');
+            const celebration = document.getElementById('celebration');
+            
+            slotsContainer.innerHTML = '';
+            lettersContainer.innerHTML = '';
+            message.style.opacity = '0';
+            celebration.style.display = 'none';
+            currentGuess = [];
+
+            // 빈칸 생성
+            targetArray.forEach((char, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'slot';
+                if (char === " ") {
+                    slot.style.border = 'none';
+                    slot.innerText = "\u00A0"; // 공백
+                } else if (char === ",") {
+                    slot.innerText = ",";
+                    slot.style.border = 'none';
+                }
+                slot.id = `slot-${index}`;
+                slotsContainer.appendChild(slot);
+            });
+
+            // 글자 타일 생성 (공백과 쉼표 제외)
+            const playableLetters = targetArray
+                .map((char, index) => ({ char, index }))
+                .filter(item => item.char !== " " && item.char !== ",");
+
+            // 타일 섞기
+            const shuffledLetters = [...playableLetters].sort(() => Math.random() - 0.5);
+
+            shuffledLetters.forEach((item) => {
+                const tile = document.createElement('div');
+                tile.className = 'letter-tile';
+                tile.innerText = item.char;
+                tile.onclick = () => handleTileClick(tile, item.char);
+                lettersContainer.appendChild(tile);
+            });
+        }
+
+        function handleTileClick(tile, char) {
+            // 다음에 채워야 할 빈칸 찾기
+            const nextEmptyIndex = targetArray.findIndex((c, i) => {
+                const slot = document.getElementById(`slot-${i}`);
+                return c !== " " && c !== "," && slot.innerText === "";
+            });
+
+            if (nextEmptyIndex !== -1) {
+                const slot = document.getElementById(`slot-${nextEmptyIndex}`);
+                
+                // 정답 체크 (선택한 글자가 해당 위치의 정답인지)
+                if (char === targetArray[nextEmptyIndex]) {
+                    slot.innerText = char;
+                    tile.classList.add('used');
+                    checkWin();
+                } else {
+                    // 틀렸을 때 살짝 흔들리는 효과
+                    tile.style.backgroundColor = '#ff4d6d';
+                    setTimeout(() => { tile.style.backgroundColor = ''; }, 300);
+                }
+            }
+        }
+
+        function checkWin() {
+            const currentText = Array.from(document.querySelectorAll('.slot'))
+                .map(slot => slot.innerText === "\u00A0" ? " " : slot.innerText)
+                .join("");
+
+            if (currentText === targetText) {
+                showCelebration();
+            }
+        }
+
+        function showCelebration() {
+            const message = document.getElementById('message');
+            const celebration = document.getElementById('celebration');
+            message.style.opacity = '1';
+            celebration.style.display = 'block';
+
+            // 하트 팡팡 효과
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'heart-particle';
+                    heart.innerText = ['❤️', '💖', '💘', '💝', '✨'][Math.floor(Math.random() * 5)];
+                    heart.style.left = Math.random() * 100 + 'vw';
+                    heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                    heart.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                    celebration.appendChild(heart);
+                    
+                    setTimeout(() => heart.remove(), 3000);
+                }, i * 100);
+            }
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
