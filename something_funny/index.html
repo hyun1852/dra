@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Something Funny!</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fce4ec;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            transition: background-color 0.2s;
+        }
+        .main-btn {
+            padding: 20px 40px;
+            font-size: 30px;
+            background-color: #ff4081;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            z-index: 100;
+            transition: transform 0.1s;
+        }
+        .main-btn:active {
+            transform: scale(0.9);
+        }
+        .laugh {
+            position: absolute;
+            font-weight: bold;
+            color: white;
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: float-up 1s forwards;
+        }
+        @keyframes float-up {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <button class="main-btn" onclick="funnyAction()">웃음 버튼 (Don't Click!)</button>
+
+    <script>
+        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+        const emojis = ['🤣', '😂', '😆', '😜', '👻', '🎉', '🌟', '🍭', '🍕'];
+
+        function funnyAction() {
+            // 배경색 변경
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            document.body.style.backgroundColor = randomColor;
+
+            // HA HA 생성
+            for (let i = 0; i < 5; i++) {
+                createLaughText();
+            }
+
+            // 이모티콘 생성
+            createEmoji();
+        }
+
+        function createLaughText() {
+            const el = document.createElement('div');
+            el.className = 'laugh';
+            el.innerText = 'HA HA HA!';
+            el.style.left = Math.random() * window.innerWidth + 'px';
+            el.style.top = Math.random() * window.innerHeight + 'px';
+            el.style.fontSize = (Math.random() * 40 + 20) + 'px';
+            el.style.color = colors[Math.floor(Math.random() * colors.length)];
+            document.body.appendChild(el);
+
+            setTimeout(() => {
+                el.remove();
+            }, 1000);
+        }
+
+        function createEmoji() {
+            const emoji = document.createElement('div');
+            emoji.className = 'laugh';
+            emoji.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            emoji.style.left = '50%';
+            emoji.style.top = '50%';
+            emoji.style.fontSize = '80px';
+            document.body.appendChild(emoji);
+
+            setTimeout(() => {
+                emoji.remove();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
