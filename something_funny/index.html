@@ -54,7 +54,38 @@
         const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
         const emojis = ['🤣', '😂', '😆', '😜', '👻', '🎉', '🌟', '🍭', '🍕'];
 
+        // 웃음소리 생성 (Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playLaughSound() {
+            const now = audioCtx.currentTime;
+            const iterations = 3; // 웃음소리 반복 횟수 (하-하-하)
+            
+            for (let i = 0; i < iterations; i++) {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                // 익살스러운 소리를 위해 sawtooth 또는 triangle 타입 사용
+                osc.type = 'sawtooth';
+                // 무작위 피치로 "하하하" 느낌 생성
+                const baseFreq = 200 + Math.random() * 300;
+                osc.frequency.setValueAtTime(baseFreq, now + i * 0.15);
+                osc.frequency.exponentialRampToValueAtTime(baseFreq * 2, now + i * 0.15 + 0.1);
+                
+                gain.gain.setValueAtTime(0.1, now + i * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.1);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start(now + i * 0.15);
+                osc.stop(now + i * 0.15 + 0.1);
+            }
+        }
+
         function funnyAction() {
+            // 웃음소리 재생
+            playLaughSound();
+
             // 배경색 변경
             const randomColor = colors[Math.floor(Math.random() * colors.length)];
             document.body.style.backgroundColor = randomColor;
