@@ -15,26 +15,43 @@
             </div>
             
             <div class="filter-section">
-                <input type="text" id="search-input" placeholder="부품명 또는 차종 검색...">
-                <select id="domain-filter">
-                    <option value="">모든 도메인</option>
-                </select>
-                <select id="system-filter">
-                    <option value="">모든 시스템</option>
-                </select>
+                <div class="filter-group">
+                    <label>시스템</label>
+                    <select id="system-filter"><option value="">전체</option></select>
+                </div>
+                <div class="filter-group">
+                    <label>모듈러시스템</label>
+                    <select id="modular-filter"><option value="">전체</option></select>
+                </div>
+                <div class="filter-group">
+                    <label>부품</label>
+                    <select id="part-filter"><option value="">전체</option></select>
+                </div>
+                <div class="filter-group">
+                    <label>투자비 정렬</label>
+                    <select id="sort-order">
+                        <option value="none">기본</option>
+                        <option value="desc">금액 높은순</option>
+                        <option value="asc">금액 낮은순</option>
+                    </select>
+                </div>
+                <div class="filter-group search">
+                    <label>검색</label>
+                    <input type="text" id="search-input" placeholder="차종 검색...">
+                </div>
             </div>
 
             <div class="summary-cards">
-                <div class="card">
-                    <span class="label">총 도메인</span>
-                    <span id="total-domains" class="value">0</span>
-                </div>
                 <div class="card">
                     <span class="label">총 시스템</span>
                     <span id="total-systems" class="value">0</span>
                 </div>
                 <div class="card">
-                    <span class="label">총 부품 수 (사양 기준)</span>
+                    <span class="label">총 모듈러시스템</span>
+                    <span id="total-modulars" class="value">0</span>
+                </div>
+                <div class="card">
+                    <span class="label">총 부품 수</span>
                     <span id="total-parts" class="value">0</span>
                 </div>
                 <div class="card highlight">
@@ -44,26 +61,34 @@
             </div>
         </header>
 
-        <main>
+        <main class="content-layout">
             <div class="table-container">
                 <table id="parts-table">
                     <thead>
                         <tr>
-                            <th>도메인 (L2)</th>
-                            <th>시스템 (L3)</th>
-                            <th>모듈러시스템 (L4)</th>
-                            <th>부품 (L5)</th>
+                            <th>도메인</th>
+                            <th>시스템</th>
+                            <th>모듈러시스템</th>
+                            <th>부품</th>
                             <th>사양</th>
-                            <th>금형투자비 (억원)</th>
+                            <th>금형투자비 (억)</th>
                             <th>대상 차종</th>
                             <th>공용 차종</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body">
-                        <!-- Data will be injected here -->
-                    </tbody>
+                    <tbody id="table-body"></tbody>
                 </table>
             </div>
+            
+            <aside class="chart-container">
+                <h3>시스템별 투자비 비중</h3>
+                <div id="chart-area">
+                    <svg id="mold-chart" width="300" height="300" viewBox="0 0 42 42">
+                        <!-- Pie chart segments will be injected here -->
+                    </svg>
+                    <div id="chart-legend" class="chart-legend"></div>
+                </div>
+            </aside>
         </main>
     </div>
     <script type="module" src="script.js"></script>

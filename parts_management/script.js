@@ -7,101 +7,105 @@ document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     renderDashboard();
 
-    // Event Listeners for Filtering
-    document.getElementById('search-input').addEventListener('input', handleFilter);
-    document.getElementById('domain-filter').addEventListener('change', handleFilter);
+    // Event Listeners
     document.getElementById('system-filter').addEventListener('change', handleFilter);
+    document.getElementById('modular-filter').addEventListener('change', handleFilter);
+    document.getElementById('part-filter').addEventListener('change', handleFilter);
+    document.getElementById('sort-order').addEventListener('change', handleFilter);
+    document.getElementById('search-input').addEventListener('input', handleFilter);
     document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 });
 
 function initFilters() {
-    const domainFilter = document.getElementById('domain-filter');
-    const systemFilter = document.getElementById('system-filter');
+    const systems = [...new Set(partsData.map(d => d.system))].sort();
+    const modulars = [...new Set(partsData.map(d => d.modularSystem))].sort();
+    const parts = [...new Set(partsData.map(d => d.part))].sort();
 
-    const domains = [...new Set(partsData.map(item => item.domain))].sort();
-    const systems = [...new Set(partsData.map(item => item.system))].sort();
+    fillSelect('system-filter', systems);
+    fillSelect('modular-filter', modulars);
+    fillSelect('part-filter', parts);
+}
 
-    domains.forEach(d => {
+function fillSelect(id, items) {
+    const select = document.getElementById(id);
+    // Keep the "All" option
+    select.innerHTML = '<option value="">전체</option>';
+    items.forEach(item => {
         const opt = document.createElement('option');
-        opt.value = d;
-        opt.textContent = d;
-        domainFilter.appendChild(opt);
-    });
-
-    systems.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s;
-        opt.textContent = s;
-        systemFilter.appendChild(opt);
+        opt.value = item;
+        opt.textContent = item;
+        select.appendChild(opt);
     });
 }
 
 function handleFilter() {
-    const searchText = document.getElementById('search-input').value.toLowerCase();
-    const domainValue = document.getElementById('domain-filter').value;
-    const systemValue = document.getElementById('system-filter').value;
+    const system = document.getElementById('system-filter').value;
+    const modular = document.getElementById('modular-filter').value;
+    const partName = document.getElementById('part-filter').value;
+    const sort = document.getElementById('sort-order').value;
+    const search = document.getElementById('search-input').value.toLowerCase();
 
-    filteredData = partsData.filter(item => {
-        const matchesSearch = item.part.toLowerCase().includes(searchText) || 
-                             item.targetVehicle.toLowerCase().includes(searchText) ||
-                             item.sharedVehicle.toLowerCase().includes(searchText);
-        const matchesDomain = domainValue === "" || item.domain === domainValue;
-        const matchesSystem = systemValue === "" || item.system === systemValue;
-
-        return matchesSearch && matchesDomain && matchesSystem;
+    filteredData = partsData.filter(d => {
+        const matchesSystem = !system || d.system === system;
+        const matchesModular = !modular || d.modularSystem === modular;
+        const matchesPart = !partName || d.part === partName;
+        const matchesSearch = !search || d.targetVehicle.toLowerCase().includes(search) || d.sharedVehicle.toLowerCase().includes(search);
+        return matchesSystem && matchesModular && matchesPart && matchesSearch;
     });
+
+    // Sorting
+    if (sort === 'asc') {
+        filteredData.sort((a, b) => a.moldCost - b.moldCost);
+    } else if (sort === 'desc') {
+        filteredData.sort((a, b) => b.moldCost - a.moldCost);
+    }
 
     renderDashboard();
 }
 
 function renderDashboard() {
     const tableBody = document.getElementById('table-body');
-    const totalDomainsEl = document.getElementById('total-domains');
     const totalSystemsEl = document.getElementById('total-systems');
+    const totalModularsEl = document.getElementById('total-modulars');
     const totalPartsEl = document.getElementById('total-parts');
     const totalCostEl = document.getElementById('total-cost');
 
-    // Summary calculations based on filtered data
-    const domains = new Set(filteredData.map(item => item.domain));
-    const systems = new Set(filteredData.map(item => item.system));
-    const totalCost = filteredData.reduce((sum, item) => sum + item.moldCost, 0);
+    // Summaries
+    const systemSet = new Set(filteredData.map(d => d.system));
+    const modularSet = new Set(filteredData.map(d => d.modularSystem));
+    const totalCost = filteredData.reduce((sum, d) => sum + d.moldCost, 0);
 
-    totalDomainsEl.textContent = domains.size;
-    totalSystemsEl.textContent = systems.size;
+    totalSystemsEl.textContent = systemSet.size;
+    totalModularsEl.textContent = modularSet.size;
     totalPartsEl.textContent = filteredData.length;
     totalCostEl.textContent = totalCost.toLocaleString() + ' 억';
 
-    // Calculate Rowspans for hierarchical view (Only if not searching/filtering significantly, or recalculate for filtered set)
+    // Render Table
     const rowspans = calculateRowspans(filteredData);
-
-    // Generate Table Rows
     let html = '';
     filteredData.forEach((item, index) => {
         html += '<tr>';
-        
-        // Level 2 to 5 with Rowspans
         const levels = ['domain', 'system', 'modularSystem', 'part'];
         levels.forEach(level => {
             if (rowspans[level][index]) {
                 html += `<td rowspan="${rowspans[level][index]}">${item[level]}</td>`;
             }
         });
-
         html += `<td>${item.spec}</td>`;
         html += `<td>${item.moldCost.toLocaleString()}</td>`;
         html += `<td>${item.targetVehicle}</td>`;
         html += `<td>${formatSharedVehicles(item.sharedVehicle)}</td>`;
-        
         html += '</tr>';
     });
 
-    tableBody.innerHTML = filteredData.length > 0 ? html : '<tr><td colspan="8">검색 결과가 없습니다.</td></tr>';
+    tableBody.innerHTML = filteredData.length > 0 ? html : '<tr><td colspan="8">데이터가 없습니다.</td></tr>';
+
+    renderChart(filteredData);
 }
 
 function calculateRowspans(data) {
     const spans = { domain: [], system: [], modularSystem: [], part: [] };
     const levels = ['domain', 'system', 'modularSystem', 'part'];
-
     levels.forEach(level => {
         spans[level] = Array(data.length).fill(0);
         let currentIdx = 0;
@@ -109,12 +113,8 @@ function calculateRowspans(data) {
             let count = 1;
             for (let i = currentIdx + 1; i < data.length; i++) {
                 let isSame = true;
-                const levelIdx = levels.indexOf(level);
-                for (let j = 0; j <= levelIdx; j++) {
-                    if (data[i][levels[j]] !== data[currentIdx][levels[j]]) {
-                        isSame = false;
-                        break;
-                    }
+                for (let j = 0; j <= levels.indexOf(level); j++) {
+                    if (data[i][levels[j]] !== data[currentIdx][levels[j]]) { isSame = false; break; }
                 }
                 if (isSame) count++; else break;
             }
@@ -130,22 +130,58 @@ function formatSharedVehicles(str) {
     return str.split(',').map(v => `<span class="shared-vehicle">${v.trim()}</span>`).join('');
 }
 
-// Theme Logic
+// Chart Logic
+function renderChart(data) {
+    const chart = document.getElementById('mold-chart');
+    const legend = document.getElementById('chart-legend');
+    const systemCosts = {};
+    let total = 0;
+
+    data.forEach(d => {
+        systemCosts[d.system] = (systemCosts[d.system] || 0) + d.moldCost;
+        total += d.moldCost;
+    });
+
+    const colors = ['#002c5f', '#007fa8', '#3a7bd5', '#4fc3f7', '#01579b'];
+    let cumulativePercent = 0;
+    let svgHtml = '';
+    let legendHtml = '';
+
+    Object.keys(systemCosts).forEach((system, i) => {
+        const cost = systemCosts[system];
+        const percent = (cost / total) * 100;
+        const color = colors[i % colors.length];
+
+        // Draw SVG circle segments
+        svgHtml += `<circle r="15.9" cx="21" cy="21" fill="transparent" 
+                     stroke="${color}" stroke-width="10" 
+                     stroke-dasharray="${percent} ${100 - percent}" 
+                     stroke-dashoffset="${-cumulativePercent}"></circle>`;
+
+        legendHtml += `<div class="legend-item">
+            <span class="legend-color" style="background:${color}"></span>
+            <span>${system}: ${Math.round(percent)}% (${cost}억)</span>
+        </div>`;
+
+        cumulativePercent += percent;
+    });
+
+    chart.innerHTML = total > 0 ? svgHtml : '';
+    legend.innerHTML = total > 0 ? legendHtml : '데이터 없음';
+}
+
+// Theme
 function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeButton(savedTheme);
+    const theme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    updateThemeBtn(theme);
 }
-
 function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeButton(newTheme);
+    const now = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', now);
+    localStorage.setItem('theme', now);
+    updateThemeBtn(now);
 }
-
-function updateThemeButton(theme) {
-    const btn = document.getElementById('theme-toggle');
-    btn.textContent = theme === 'dark' ? 'Light Mode☀️' : 'Dark Mode🌙';
+function updateThemeBtn(t) {
+    document.getElementById('theme-toggle').textContent = t === 'dark' ? 'Light Mode☀️' : 'Dark Mode🌙';
 }

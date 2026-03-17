@@ -1,58 +1,40 @@
 const partsData = [
-    // EV6
-    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Front Seat Frame", spec: "Leather-Type A", moldCost: 30, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
-    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Rear Seat Cushion", spec: "Standard", moldCost: 45, targetVehicle: "EV6", sharedVehicle: "IONIQ5, GV60" },
-    { domain: "시트/칵핏", system: "칵핏모듈", modularSystem: "IP MODULE", part: "Main Board", spec: "12.3-inch", moldCost: 120, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
-    { domain: "전장", system: "AVN", modularSystem: "HEAD UNIT", part: "Display Panel", spec: "Curved Display", moldCost: 200, targetVehicle: "EV6", sharedVehicle: "EV9, IONIQ7" },
-    { domain: "파워트레인", system: "인버터", modularSystem: "PCU", part: "Power Module", spec: "800V High Power", moldCost: 350, targetVehicle: "EV6", sharedVehicle: "IONIQ6, IONIQ5" },
-    { domain: "바디", system: "후드", modularSystem: "FRONT BODY", part: "Hood Inner Panel", spec: "Aluminum-AL5052", moldCost: 180, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
-    { domain: "배터리", system: "BPA", modularSystem: "BATTERY PACK", part: "Lower Case", spec: "Aluminum-Extrusion", moldCost: 450, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    // 시트 시스템 - FR SEAT
+    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Seat Frame", spec: "Standard", moldCost: 45, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Seat Frame", spec: "Power-Adjust", moldCost: 55, targetVehicle: "EV6", sharedVehicle: "IONIQ5, GV60" },
+    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Seat Frame", spec: "Light-Weight", moldCost: 65, targetVehicle: "EV6", sharedVehicle: "EV9" },
+    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Cushion Foam", spec: "Memory Foam", moldCost: 12, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Backrest Cover", spec: "Leather", moldCost: 8, targetVehicle: "EV6", sharedVehicle: "GV60" },
+    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Slide Rail", spec: "Electric", moldCost: 22, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Headrest", spec: "Active-Type", moldCost: 15, targetVehicle: "EV6", sharedVehicle: "EV9" },
 
-    // IONIQ5
-    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Front Seat Frame", spec: "Leather-Type A", moldCost: 30, targetVehicle: "IONIQ5", sharedVehicle: "EV6" },
-    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Rear Seat Cushion", spec: "Standard", moldCost: 45, targetVehicle: "IONIQ5", sharedVehicle: "EV6, GV60" },
-    { domain: "시트/칵핏", system: "칵핏모듈", modularSystem: "IP MODULE", part: "Main Board", spec: "12.3-inch", moldCost: 120, targetVehicle: "IONIQ5", sharedVehicle: "EV6" },
-    { domain: "전장", system: "AVN", modularSystem: "HEAD UNIT", part: "Display Panel", spec: "Curved Display", moldCost: 200, targetVehicle: "IONIQ5", sharedVehicle: "EV9, EV6" },
-    { domain: "파워트레인", system: "인버터", modularSystem: "PCU", part: "Power Module", spec: "800V High Power", moldCost: 350, targetVehicle: "IONIQ5", sharedVehicle: "IONIQ6, EV6" },
-    { domain: "바디", system: "후드", modularSystem: "FRONT BODY", part: "Hood Inner Panel", spec: "Aluminum-AL5052", moldCost: 180, targetVehicle: "IONIQ5", sharedVehicle: "EV6" },
-    { domain: "배터리", system: "BPA", modularSystem: "BATTERY PACK", part: "Lower Case", spec: "Aluminum-Extrusion", moldCost: 450, targetVehicle: "IONIQ5", sharedVehicle: "EV6" },
+    // 시트 시스템 - RR SEAT
+    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Rear Frame", spec: "6:4 Foldable", moldCost: 85, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Cushion Pad", spec: "Standard", moldCost: 18, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Center Armrest", spec: "Integrated", moldCost: 25, targetVehicle: "EV6", sharedVehicle: "GV60" },
+    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "ISOFIX Bracket", spec: "Steel", moldCost: 5, targetVehicle: "EV6", sharedVehicle: "IONIQ5, GV60" },
+    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Heating Pad", spec: "2-Step", moldCost: 10, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
 
-    // GV60
-    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Front Seat Frame", spec: "Leather-Type A", moldCost: 30, targetVehicle: "GV60", sharedVehicle: "EV6, IONIQ5" },
-    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Rear Seat Cushion", spec: "Standard", moldCost: 45, targetVehicle: "GV60", sharedVehicle: "EV6, IONIQ5" },
-    { domain: "시트/칵핏", system: "칵핏모듈", modularSystem: "IP MODULE", part: "Main Board", spec: "12.3-inch", moldCost: 120, targetVehicle: "GV60", sharedVehicle: "EV6" },
-    { domain: "전장", system: "AVN", modularSystem: "HEAD UNIT", part: "Display Panel", spec: "Curved Display", moldCost: 200, targetVehicle: "GV60", sharedVehicle: "EV9, IONIQ7" },
-    { domain: "파워트레인", system: "인버터", modularSystem: "PCU", part: "Power Module", spec: "800V High Power", moldCost: 350, targetVehicle: "GV60", sharedVehicle: "IONIQ6, IONIQ5" },
-    { domain: "바디", system: "후드", modularSystem: "FRONT BODY", part: "Hood Inner Panel", spec: "Aluminum-AL5052", moldCost: 180, targetVehicle: "GV60", sharedVehicle: "IONIQ5" },
-    { domain: "배터리", system: "BPA", modularSystem: "BATTERY PACK", part: "Lower Case", spec: "Aluminum-Extrusion", moldCost: 450, targetVehicle: "GV60", sharedVehicle: "IONIQ5" },
+    // 칵핏 시스템 - IP MODULE
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "IP MODULE", part: "Main IP Panel", spec: "Soft-Pad", moldCost: 150, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "IP MODULE", part: "Glove Box", spec: "Damping-Type", moldCost: 35, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "IP MODULE", part: "Air Vent", spec: "Slim-Design", moldCost: 28, targetVehicle: "EV6", sharedVehicle: "EV9" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "IP MODULE", part: "Cluster Housing", spec: "12.3-inch", moldCost: 42, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "IP MODULE", part: "HUD Bracket", spec: "Reinforced", moldCost: 18, targetVehicle: "EV6", sharedVehicle: "GV60" },
 
-    // K8
-    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Front Seat Frame", spec: "Leather-Type A", moldCost: 30, targetVehicle: "K8", sharedVehicle: "Grandeur" },
-    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Rear Seat Cushion", spec: "Standard", moldCost: 45, targetVehicle: "K8", sharedVehicle: "Grandeur, K9" },
-    { domain: "시트/칵핏", system: "칵핏모듈", modularSystem: "IP MODULE", part: "Main Board", spec: "12.3-inch", moldCost: 120, targetVehicle: "K8", sharedVehicle: "K9" },
-    { domain: "전장", system: "AVN", modularSystem: "HEAD UNIT", part: "Display Panel", spec: "Curved Display", moldCost: 200, targetVehicle: "K8", sharedVehicle: "Grandeur" },
-    { domain: "파워트레인", system: "인버터", modularSystem: "PCU", part: "Power Module", spec: "Standard", moldCost: 250, targetVehicle: "K8", sharedVehicle: "K5, Sonata" },
-    { domain: "바디", system: "후드", modularSystem: "FRONT BODY", part: "Hood Inner Panel", spec: "Aluminum-AL5052", moldCost: 180, targetVehicle: "K8", sharedVehicle: "Grandeur" },
-    { domain: "배터리", system: "BPA", modularSystem: "BATTERY PACK", part: "Lower Case", spec: "N/A", moldCost: 0, targetVehicle: "K8", sharedVehicle: "K9" },
+    // 칵핏 시스템 - CONSOLE
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "CONSOLE", part: "Console Body", spec: "Sliding-Type", moldCost: 95, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "CONSOLE", part: "Cup Holder", spec: "Open-Type", moldCost: 12, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "CONSOLE", part: "USB Module", spec: "Type-C Fast", moldCost: 8, targetVehicle: "EV6", sharedVehicle: "EV9" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "CONSOLE", part: "Armrest Cover", spec: "Synthetic Leather", moldCost: 20, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "CONSOLE", part: "Shift Bezel", spec: "Piano Black", moldCost: 15, targetVehicle: "EV6", sharedVehicle: "GV60" },
 
-    // Grandeur
-    { domain: "시트/칵핏", system: "시트", modularSystem: "FR SEAT", part: "Front Seat Frame", spec: "Leather-Type A", moldCost: 30, targetVehicle: "Grandeur", sharedVehicle: "K8" },
-    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Rear Seat Cushion", spec: "Standard", moldCost: 45, targetVehicle: "Grandeur", sharedVehicle: "K8, K9" },
-    { domain: "시트/칵핏", system: "칵핏모듈", modularSystem: "IP MODULE", part: "Main Board", spec: "12.3-inch", moldCost: 120, targetVehicle: "Grandeur", sharedVehicle: "K8" },
-    { domain: "전장", system: "AVN", modularSystem: "HEAD UNIT", part: "Display Panel", spec: "Curved Display", moldCost: 200, targetVehicle: "Grandeur", sharedVehicle: "K8" },
-    { domain: "파워트레인", system: "인버터", modularSystem: "PCU", part: "Power Module", spec: "Standard", moldCost: 250, targetVehicle: "Grandeur", sharedVehicle: "Sonata, K5" },
-    { domain: "바디", system: "후드", modularSystem: "FRONT BODY", part: "Hood Inner Panel", spec: "Aluminum-AL5052", moldCost: 180, targetVehicle: "Grandeur", sharedVehicle: "K8" },
-    { domain: "배터리", system: "BPA", modularSystem: "BATTERY PACK", part: "Lower Case", spec: "N/A", moldCost: 0, targetVehicle: "Grandeur", sharedVehicle: "K8" },
-
-    // 추가적인 시스템들 샘플
-    { domain: "섀시", system: "제동", modularSystem: "ABS MODULE", part: "Valve Block", spec: "Aluminum-L4", moldCost: 55, targetVehicle: "EV6", sharedVehicle: "IONIQ5, GV60" },
-    { domain: "섀시", system: "현가", modularSystem: "AIR SUS", part: "Air Spring Case", spec: "Multi-Chamber", moldCost: 95, targetVehicle: "G90", sharedVehicle: "G80" },
-    { domain: "의장", system: "도어트림", modularSystem: "DOOR MODULE", part: "Armrest Support", spec: "Soft-Touch", moldCost: 28, targetVehicle: "K5", sharedVehicle: "Sonata" },
-    { domain: "바디", system: "사이드", modularSystem: "SIDE STRUCTURE", part: "Center Pillar", spec: "Hot Stamping", moldCost: 150, targetVehicle: "Sorento", sharedVehicle: "Santa Fe" },
-    { domain: "공조", system: "HVAC", modularSystem: "AIR CONDITIONING", part: "Evaporator Case", spec: "Plastic-PP", moldCost: 45, targetVehicle: "Avante", sharedVehicle: "K3" },
-    { domain: "램프", system: "헤드램프", modularSystem: "FRONT LIGHTING", part: "Lens Cover", spec: "PC-Clear", moldCost: 110, targetVehicle: "Grandeur", sharedVehicle: "K8" },
-    { domain: "전장", system: "ADAS", modularSystem: "FRONT CAMERA", part: "Camera Bracket", spec: "Glass-Fiber-PA", moldCost: 12, targetVehicle: "GV80", sharedVehicle: "GV70" },
-    { domain: "구동", system: "감속기", modularSystem: "EDU", part: "Gear Housing", spec: "Aluminum-ALDC12", moldCost: 280, targetVehicle: "IONIQ5", sharedVehicle: "EV6" }
+    // 칵핏 시스템 - DOOR TRIM
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "DOOR TRIM", part: "Main Panel", spec: "Recycled-PET", moldCost: 110, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "DOOR TRIM", part: "Armrest Support", spec: "Integrated", moldCost: 30, targetVehicle: "EV6", sharedVehicle: "IONIQ5" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "DOOR TRIM", part: "Switch Bezel", spec: "Silver-Paint", moldCost: 18, targetVehicle: "EV6", sharedVehicle: "EV9" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "DOOR TRIM", part: "Map Pocket", spec: "Illuminated", moldCost: 25, targetVehicle: "EV6", sharedVehicle: "GV60" },
+    { domain: "시트/칵핏", system: "칵핏", modularSystem: "DOOR TRIM", part: "Speaker Grille", spec: "Metal-Etching", moldCost: 35, targetVehicle: "EV6", sharedVehicle: "IONIQ5" }
 ];
 
 export default partsData;
