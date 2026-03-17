@@ -37,16 +37,16 @@
     --secondary-foreground: 0 0% 0%;
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
-    --accent: 0 0% 96%;
+    --accent: 0 0% 95%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 0% 90%;
     --destructive-foreground: 0 0% 0%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
     --ring: 0 0% 0%;
     --grid-color: rgba(0, 0, 0, 0.05);
     --radial-start: rgba(255, 255, 255, 1);
-    --radial-end: rgba(245, 245, 245, 1);
+    --radial-end: rgba(255, 255, 255, 1);
 }
 
 * {
