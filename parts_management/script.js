@@ -46,7 +46,7 @@ function fillSelect(id, items) {
     });
 }
 
-function handleFilter() {
+function handleFilter(e) {
     const domain = document.getElementById('domain-filter').value;
     const system = document.getElementById('system-filter').value;
     const modular = document.getElementById('modular-filter').value;
@@ -54,13 +54,12 @@ function handleFilter() {
     const sort = document.getElementById('sort-order').value;
     const search = document.getElementById('search-input').value.toLowerCase();
 
+    // 1. Update working data based on all filters
     filteredData = partsData.filter(d => {
         const matchesDomain = !domain || d.domain === domain;
         const matchesSystem = !system || d.system === system;
         const matchesModular = !modular || d.modularSystem === modular;
         const matchesPart = !partName || d.part === partName;
-        
-        // Global Search: Across all text fields
         const matchesSearch = !search || 
             d.domain.toLowerCase().includes(search) ||
             d.system.toLowerCase().includes(search) ||
@@ -73,6 +72,21 @@ function handleFilter() {
         return matchesDomain && matchesSystem && matchesModular && matchesPart && matchesSearch;
     });
 
+    // 2. Hierarchical UI Update: Refresh LOWER level filter options based on CURRENT selection
+    // We only refresh the options of levels BELOW the one that was just changed
+    const changedId = e ? e.target.id : null;
+    
+    if (changedId === 'domain-filter' || !changedId) {
+        updateFilterOptions('system-filter', 'system', domain ? filteredData : partsData);
+        updateFilterOptions('modular-filter', 'modularSystem', domain ? filteredData : partsData);
+        updateFilterOptions('part-filter', 'part', domain ? filteredData : partsData);
+    } else if (changedId === 'system-filter') {
+        updateFilterOptions('modular-filter', 'modularSystem', filteredData);
+        updateFilterOptions('part-filter', 'part', filteredData);
+    } else if (changedId === 'modular-filter') {
+        updateFilterOptions('part-filter', 'part', filteredData);
+    }
+
     if (sort === 'asc') {
         filteredData.sort((a, b) => a.moldCost - b.moldCost);
     } else if (sort === 'desc') {
@@ -80,6 +94,26 @@ function handleFilter() {
     }
 
     renderDashboard();
+}
+
+function updateFilterOptions(id, key, data) {
+    const select = document.getElementById(id);
+    const currentVal = select.value;
+    const items = [...new Set(data.map(d => d[key]))].sort();
+    
+    let defaultText = '전체 시스템';
+    if (id === 'domain-filter') defaultText = '전체 도메인';
+    if (id === 'modular-filter') defaultText = '전체 모듈러';
+    if (id === 'part-filter') defaultText = '전체 부품';
+    
+    select.innerHTML = `<option value="">${defaultText}</option>`;
+    items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item;
+        opt.textContent = item;
+        if (item === currentVal) opt.selected = true; // Preserve selection if possible
+        select.appendChild(opt);
+    });
 }
 
 function renderDashboard() {
