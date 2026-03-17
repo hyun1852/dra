@@ -106,7 +106,7 @@ function renderDashboard() {
             rowDataAttrs += ` data-${level}-link="${lastCellIds[level]}"`;
         });
 
-        html += `<tr class="transition-colors hover:bg-foreground/5 group-row" ${rowDataAttrs}>`;
+        html += `<tr class="transition-colors group-row" ${rowDataAttrs}>`;
         levels.forEach(level => {
             if (rowspans[level][index]) {
                 html += `<td id="${lastCellIds[level]}" rowspan="${rowspans[level][index]}" class="px-6 py-4 font-bold text-foreground underline decoration-border/20 transition-colors">${item[level]}</td>`;
@@ -142,7 +142,7 @@ function initTableHover() {
             const cellId = tr.getAttribute(`data-${level}-link`);
             if (cellId) {
                 const cell = document.getElementById(cellId);
-                if (cell) cell.classList.add('bg-foreground/10');
+                if (cell) cell.classList.add('cell-highlight');
             }
         });
     });
@@ -155,7 +155,7 @@ function initTableHover() {
             const cellId = tr.getAttribute(`data-${level}-link`);
             if (cellId) {
                 const cell = document.getElementById(cellId);
-                if (cell) cell.classList.remove('bg-foreground/10');
+                if (cell) cell.classList.remove('cell-highlight');
             }
         });
     });

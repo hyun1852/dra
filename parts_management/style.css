@@ -99,13 +99,10 @@ th:nth-child(8), td:nth-child(8) {
     text-align: center;
 }
 
-tr:hover {
-    background-color: hsl(var(--foreground) / 0.05);
-}
-
-/* Highlight for merged parent cells */
-td.bg-foreground\/10 {
-    background-color: hsl(var(--foreground) / 0.08) !important;
+/* Unified Hover Effect */
+tr:hover td,
+td.cell-highlight {
+    background-color: hsl(var(--foreground) / 0.06) !important;
 }
 
 /* Shared Vehicle Tag (Grayscale) */
