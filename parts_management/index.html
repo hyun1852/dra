@@ -45,19 +45,12 @@
     </script>
 </head>
 <body class="bg-background text-foreground font-sans antialiased min-h-screen">
-    <!-- Theme Toggle Fixed -->
-    <div class="fixed top-6 right-6 z-[100]">
-        <button id="theme-toggle" class="px-4 py-2 rounded-md border border-border bg-background/80 backdrop-blur-sm text-sm font-bold hover:bg-accent transition-all shadow-lg"></button>
-    </div>
-
-    <!-- Background Grid (Grayscale) -->
-    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(20,20,20,1)_0%,rgba(0,0,0,1)_100%)]"></div>
-        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#ffffff 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
-    </div>
-
     <div class="relative flex min-h-screen flex-col">
         <header class="container mx-auto px-4 py-16 lg:py-24 text-center relative z-10">
+            <!-- Theme Toggle Unfixed -->
+            <div class="absolute top-6 right-6">
+                <button id="theme-toggle" class="px-4 py-2 rounded-md border border-border bg-background/80 backdrop-blur-sm text-sm font-bold hover:bg-accent transition-all shadow-md"></button>
+            </div>
             <h1 class="text-4xl font-extrabold tracking-tight sm:text-6xl mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
                 Module Commonalization & <br/><span class="text-foreground">Mold Investment Dashboard</span>
             </h1>
