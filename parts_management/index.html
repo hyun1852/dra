@@ -96,7 +96,7 @@
         </header>
 
         <main id="dashboard-main" class="container mx-auto px-4 py-12 relative z-10">
-            <!-- Filter Section (Grayscale) -->
+            <!-- Filter Section -->
             <div class="mb-12 rounded-xl border border-border bg-background/40 p-6 backdrop-blur-sm shadow-md">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
                     <div class="space-y-2">
@@ -130,63 +130,92 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <!-- Table Area (Grayscale) -->
-                <div class="lg:col-span-3">
-                    <div class="rounded-xl border border-border bg-background/40 shadow-lg">
-                        <div class="relative">
-                            <table id="parts-table" class="w-full text-xs text-left border-separate border-spacing-0">
-                                <thead class="text-foreground uppercase text-[10px] font-bold">
-                                    <tr>
-                                        <th class="px-6 py-4 sticky top-0 z-20">도메인</th>
-                                        <th class="px-6 py-4 sticky top-0 z-20">시스템</th>
-                                        <th class="px-6 py-4 sticky top-0 z-20">모듈러시스템</th>
-                                        <th class="px-6 py-4 sticky top-0 z-20">부품</th>
-                                        <th class="px-6 py-4 sticky top-0 z-20">사양</th>
-                                        <th class="px-6 py-4 sticky top-0 z-20">금형투자비(억)</th>
-                                        <th class="px-6 py-4 sticky top-0 z-20 font-black text-primary">총 금형투자비(억)</th>
-                                        <th class="px-2 py-4 sticky top-0 z-20 text-center">NE2</th>
-                                        <th class="px-2 py-4 sticky top-0 z-20 text-center">NV1</th>
-                                        <th class="px-2 py-4 sticky top-0 z-20 text-center">JK2</th>
-                                        <th class="px-2 py-4 sticky top-0 z-20 text-center">JW2</th>
-                                        <th class="px-2 py-4 sticky top-0 z-20 text-center">ME2</th>
-                                        <th class="px-2 py-4 sticky top-0 z-20 text-center">MV2</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="table-body" class="divide-y divide-border/30"></tbody>
-                            </table>
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <!-- System Pie Chart -->
+                <div class="rounded-xl border border-border bg-background/40 p-8 backdrop-blur-sm shadow-lg">
+                    <h3 class="text-sm font-bold uppercase tracking-widest mb-8 text-foreground text-center border-b border-border pb-4">시스템별 금형투자비 비중</h3>
+                    <div id="chart-area" class="flex flex-col md:flex-row items-center justify-around gap-8">
+                        <div class="relative w-48 h-48 shrink-0">
+                            <svg id="mold-chart" class="w-full h-full transform -rotate-90" viewBox="0 0 42 42">
+                                <!-- Pie segments -->
+                            </svg>
                         </div>
+                        <div id="chart-legend" class="flex-1 space-y-3 w-full"></div>
                     </div>
                 </div>
 
-                <!-- Chart Area (Grayscale) -->
-                <aside class="space-y-6">
-                    <div class="rounded-xl border border-border bg-background/40 p-6 backdrop-blur-sm shadow-lg sticky top-8">
-                        <h3 class="text-sm font-bold uppercase tracking-widest mb-6 text-foreground text-center border-b border-border pb-4">시스템별 금형투자비 비중</h3>
-                        <div id="chart-area" class="flex flex-col items-center mb-12">
-                            <div class="relative w-48 h-48 mb-8">
-                                <svg id="mold-chart" class="w-full h-full transform -rotate-90" viewBox="0 0 42 42">
-                                    <!-- Pie chart segments will be injected here -->
-                                </svg>
-                            </div>
-                            <div id="chart-legend" class="w-full space-y-3"></div>
-                        </div>
-
-                        <h3 class="text-sm font-bold uppercase tracking-widest mb-6 text-foreground text-center border-b border-border pb-4">금형공용화율 현황</h3>
-                        <div id="sharing-chart-area" class="flex flex-col items-center">
-                            <div class="relative w-48 h-48 mb-4">
-                                <svg id="sharing-rate-chart" class="w-full h-full transform -rotate-90" viewBox="0 0 42 42">
-                                    <circle r="15.9" cx="21" cy="21" fill="transparent" stroke="hsl(var(--secondary))" stroke-width="4"></circle>
-                                    <circle id="sharing-rate-fill" r="15.9" cx="21" cy="21" fill="transparent" stroke="currentColor" stroke-width="4" stroke-dasharray="0 100" class="text-foreground transition-all duration-1000 ease-out"></circle>
-                                </svg>
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <span id="sharing-rate-text" class="text-2xl font-black">0%</span>
+                <!-- Sharing Rate Vertical Bar Chart -->
+                <div class="rounded-xl border border-border bg-background/40 p-8 backdrop-blur-sm shadow-lg flex flex-col">
+                    <h3 class="text-sm font-bold uppercase tracking-widest mb-8 text-foreground text-center border-b border-border pb-4">금형공용화 현황 (투자비 절감)</h3>
+                    <div class="flex-1 flex flex-row items-end justify-center gap-12 pt-4 pb-2">
+                        <!-- Potential Total Bar -->
+                        <div class="flex flex-col items-center gap-4 h-full w-24">
+                            <div class="flex-1 w-full bg-secondary/20 border border-border rounded-t-lg relative flex flex-col justify-end overflow-hidden shadow-inner">
+                                <div class="h-full w-full bg-muted-foreground/10"></div>
+                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <span class="text-[10px] font-bold text-muted-foreground vertical-text transform -rotate-90 whitespace-nowrap">POTENTIAL</span>
                                 </div>
                             </div>
-                            <p class="text-[10px] text-muted-foreground text-center px-4 leading-relaxed">전체 잠재 투자비 대비 <br/>공용화로 절감된 비용의 비율</p>
+                            <div class="text-center space-y-1">
+                                <span id="potential-cost-val" class="text-xs font-bold block">0억</span>
+                                <span class="text-[8px] uppercase text-muted-foreground font-black tracking-tighter">잠재 총액</span>
+                            </div>
+                        </div>
+
+                        <!-- Actual Spent Bar -->
+                        <div class="flex flex-col items-center gap-4 h-full w-24">
+                            <div class="flex-1 w-full bg-secondary/20 border border-border rounded-t-lg relative flex flex-col justify-end overflow-hidden shadow-inner">
+                                <div id="actual-spent-bar" class="w-full bg-foreground transition-all duration-1000 ease-out flex items-start justify-center pt-2" style="height: 0%">
+                                    <span id="actual-cost-val" class="text-[10px] font-black text-background">0억</span>
+                                </div>
+                            </div>
+                            <div class="text-center space-y-1">
+                                <span id="sharing-rate-percent" class="text-sm font-black block text-primary">0%</span>
+                                <span class="text-[8px] uppercase text-foreground font-black tracking-tighter">실제 지출</span>
+                            </div>
+                        </div>
+
+                        <!-- Saved Cost Bar -->
+                        <div class="flex flex-col items-center gap-4 h-full w-24">
+                            <div class="flex-1 w-full bg-secondary/20 border border-border rounded-t-lg relative flex flex-col justify-end overflow-hidden shadow-inner">
+                                <div id="saved-cost-bar" class="w-full bg-secondary transition-all duration-1000 ease-out flex items-start justify-center pt-2" style="height: 0%">
+                                    <span id="saved-cost-val" class="text-[10px] font-bold text-foreground">0억</span>
+                                </div>
+                            </div>
+                            <div class="text-center space-y-1">
+                                <span id="saved-cost-summary" class="text-xs font-bold block">0억</span>
+                                <span class="text-[8px] uppercase text-muted-foreground font-black tracking-tighter">절감 총액</span>
+                            </div>
                         </div>
                     </div>
-                </aside>
+                </div>
+            </div>
+
+            <!-- Table Area (Full Width) -->
+            <div class="rounded-xl border border-border bg-background/40 shadow-lg mb-12">
+                <div class="relative overflow-x-auto">
+                    <table id="parts-table" class="w-full text-xs text-left border-separate border-spacing-0 min-w-max">
+                        <thead class="text-foreground uppercase text-[10px] font-bold">
+                            <tr>
+                                <th class="px-6 py-4 sticky top-0 z-20">도메인</th>
+                                <th class="px-6 py-4 sticky top-0 z-20">시스템</th>
+                                <th class="px-6 py-4 sticky top-0 z-20">모듈러시스템</th>
+                                <th class="px-6 py-4 sticky top-0 z-20">부품</th>
+                                <th class="px-6 py-4 sticky top-0 z-20">사양</th>
+                                <th class="px-6 py-4 sticky top-0 z-20 border-r border-border/50">금형투자비(억)</th>
+                                <th class="px-6 py-4 sticky top-0 z-20 font-black text-primary border-r border-border/50">총 금형투자비(억)</th>
+                                <th class="px-2 py-4 sticky top-0 z-20 text-center">NE2</th>
+                                <th class="px-2 py-4 sticky top-0 z-20 text-center">NV1</th>
+                                <th class="px-2 py-4 sticky top-0 z-20 text-center">JK2</th>
+                                <th class="px-2 py-4 sticky top-0 z-20 text-center">JW2</th>
+                                <th class="px-2 py-4 sticky top-0 z-20 text-center">ME2</th>
+                                <th class="px-2 py-4 sticky top-0 z-20 text-center">MV2</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-border/30"></tbody>
+                    </table>
+                </div>
             </div>
         </main>
 

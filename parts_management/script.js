@@ -213,15 +213,34 @@ function renderDashboard() {
     }, 50);
 
     renderChart(filteredData);
-    renderSharingChart(sharingRate);
+    renderSharingChart(actualSpentCost, potentialTotalCost);
 }
 
-function renderSharingChart(rate) {
-    const fill = document.getElementById('sharing-rate-fill');
-    const text = document.getElementById('sharing-rate-text');
-    if (fill && text) {
-        fill.style.strokeDasharray = `${rate} 100`;
-        text.textContent = `${Math.round(rate)}%`;
+function renderSharingChart(actual, potential) {
+    const actualBar = document.getElementById('actual-spent-bar');
+    const savedBar = document.getElementById('saved-cost-bar');
+    const actualText = document.getElementById('actual-cost-val');
+    const savedText = document.getElementById('saved-cost-val');
+    const potentialText = document.getElementById('potential-cost-val');
+    const savedSummaryText = document.getElementById('saved-cost-summary');
+    const ratePercentText = document.getElementById('sharing-rate-percent');
+
+    const saved = potential - actual;
+    const rate = potential > 0 ? (saved / potential) * 100 : 0;
+    
+    // For vertical bars, we calculate height as percentage of potential
+    const actualHeight = potential > 0 ? (actual / potential) * 100 : 0;
+    const savedHeight = potential > 0 ? (saved / potential) * 100 : 0;
+
+    if (actualBar && savedBar) {
+        actualBar.style.height = `${actualHeight}%`;
+        savedBar.style.height = `${savedHeight}%`;
+        
+        actualText.textContent = `${actual.toLocaleString()}억`;
+        savedText.textContent = `${saved.toLocaleString()}억`;
+        potentialText.textContent = `${potential.toLocaleString()}억`;
+        savedSummaryText.textContent = `${saved.toLocaleString()}억`;
+        ratePercentText.textContent = `${Math.round(rate)}%`;
     }
 }
 
