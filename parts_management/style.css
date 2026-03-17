@@ -165,5 +165,16 @@ tr {
 }
 
 #mold-chart circle {
-    transition: stroke-dasharray 0.8s ease, stroke-dashoffset 0.8s ease, stroke 0.3s ease;
+    transition: stroke-dasharray 1s cubic-bezier(0.4, 0, 0.2, 1), 
+                stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1), 
+                stroke 0.3s ease;
+    stroke-linecap: round;
+}
+
+@keyframes chartDraw {
+    from { stroke-dasharray: 0 100; }
+}
+
+#mold-chart circle {
+    animation: chartDraw 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }

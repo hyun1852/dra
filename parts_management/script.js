@@ -87,7 +87,7 @@ function renderDashboard() {
     animateNumber(totalModularsEl, modularSet.size);
     animateNumber(totalPartsEl, filteredData.length);
     animateNumber(totalSpecsEl, specSet.size);
-    animateNumber(totalCostEl, totalCost, true);
+    animateNumber(totalCostEl, totalCost, true, 400); // Faster duration for Mold Cost
 
     const rowspans = calculateRowspans(filteredData);
     let html = '';
@@ -116,9 +116,8 @@ function renderDashboard() {
     renderChart(filteredData);
 }
 
-function animateNumber(el, target, isCurrency = false) {
+function animateNumber(el, target, isCurrency = false, duration = 800) {
     const start = parseInt(el.textContent.replace(/[^0-9]/g, '')) || 0;
-    const duration = 800;
     const startTime = performance.now();
 
     function update(currentTime) {
