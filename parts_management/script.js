@@ -265,9 +265,7 @@ function initTableHover() {
             }
         });
         
-        // Highlight non-vehicle cells in the current row (columns 0 to total-7)
-        const totalCells = allCells.length;
-        // Highlight non-vehicle cells in the current row (columns 0 up to vehicle columns)
+        // Highlight non-vehicle cells in the current row (columns up to vehicle columns)
         const totalCells = allCells.length;
         allCells.forEach((c, idx) => {
             if (idx < totalCells - 6) c.classList.add('cell-highlight');
