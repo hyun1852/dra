@@ -9,7 +9,21 @@
 <body>
     <div class="dashboard">
         <header>
-            <h1>Parts & Mold Investment Dashboard</h1>
+            <div class="header-top">
+                <h1>Parts & Mold Investment Dashboard</h1>
+                <button id="theme-toggle" class="btn">Dark Mode</button>
+            </div>
+            
+            <div class="filter-section">
+                <input type="text" id="search-input" placeholder="부품명 또는 차종 검색...">
+                <select id="domain-filter">
+                    <option value="">모든 도메인</option>
+                </select>
+                <select id="system-filter">
+                    <option value="">모든 시스템</option>
+                </select>
+            </div>
+
             <div class="summary-cards">
                 <div class="card">
                     <span class="label">총 도메인</span>
