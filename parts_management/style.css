@@ -19,6 +19,9 @@
     --input: 0 0% 15%;
     --ring: 0 0% 100%;
     --radius: 0.25rem;
+    --grid-color: rgba(255, 255, 255, 0.1);
+    --radial-start: rgba(20, 20, 20, 1);
+    --radial-end: rgba(0, 0, 0, 1);
 }
 
 [data-theme="light"] {
@@ -30,7 +33,7 @@
     --popover-foreground: 0 0% 0%;
     --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%;
+    --secondary: 0 0% 98%;
     --secondary-foreground: 0 0% 0%;
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
@@ -41,6 +44,9 @@
     --border: 0 0% 90%;
     --input: 0 0% 90%;
     --ring: 0 0% 0%;
+    --grid-color: rgba(0, 0, 0, 0.05);
+    --radial-start: rgba(255, 255, 255, 1);
+    --radial-end: rgba(245, 245, 245, 1);
 }
 
 * {
