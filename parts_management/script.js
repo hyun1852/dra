@@ -213,6 +213,8 @@ function initTableHover() {
         
         // Highlight non-vehicle cells in the current row (columns 0 to total-7)
         const totalCells = allCells.length;
+        // Highlight non-vehicle cells in the current row (columns 0 up to vehicle columns)
+        const totalCells = allCells.length;
         allCells.forEach((c, idx) => {
             if (idx < totalCells - 6) c.classList.add('cell-highlight');
         });
@@ -298,7 +300,7 @@ function renderChart(data) {
         const color = colors[i % colors.length];
 
         svgHtml += `<circle r="15.9" cx="21" cy="21" fill="transparent" 
-                     stroke="${color}" stroke-width="6" 
+                     stroke="${color}" stroke-width="4" 
                      stroke-dasharray="${percent} ${100 - percent}" 
                      stroke-dashoffset="${-cumulativePercent}"
                      class="transition-all duration-300 hover:stroke-foreground"></circle>`;
