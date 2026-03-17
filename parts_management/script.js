@@ -100,7 +100,7 @@ function renderDashboard() {
             }
         });
         html += `<td class="px-6 py-4 text-muted-foreground">${item.spec}</td>`;
-        html += `<td class="px-6 py-4 font-black text-foreground">${item.moldCost.toLocaleString()}</td>`;
+        html += `<td class="px-6 py-4 font-black text-foreground text-right tabular-nums">${item.moldCost.toLocaleString()}</td>`;
         html += `<td class="px-6 py-4"><span class="px-2 py-1 rounded bg-foreground/5 text-[10px] font-bold border border-border uppercase">${item.targetVehicle}</span></td>`;
         html += `<td class="px-6 py-4">${formatSharedVehicles(item.sharedVehicle)}</td>`;
         html += '</tr>';
@@ -149,8 +149,8 @@ function renderChart(data) {
         total += d.moldCost;
     });
 
-    // Monochrome palette
-    const colors = ['#ffffff', '#e5e5e5', '#a3a3a3', '#525252', '#262626', '#171717'];
+    // Monochrome palette with higher contrast
+    const colors = ['#ffffff', '#bbbbbb', '#888888', '#555555', '#333333', '#111111'];
     let cumulativePercent = 0;
     let svgHtml = '';
     let legendHtml = '';
