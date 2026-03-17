@@ -70,10 +70,17 @@ th:last-child, td:last-child {
 thead th {
     position: sticky;
     top: 0;
-    z-index: 20;
-    background-color: hsl(var(--secondary) / 0.9) !important;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 1px 0 hsl(var(--border));
+    z-index: 40;
+    background-color: hsl(var(--background)) !important;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 hsl(var(--border)), 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Ensure no parent clips the sticky header */
+#dashboard-main, 
+.lg:col-span-3,
+.rounded-xl {
+    overflow: visible !important;
 }
 
 /* Specific Column Alignments */
