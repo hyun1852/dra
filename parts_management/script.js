@@ -47,12 +47,21 @@ function fillSelect(id, items) {
 }
 
 function handleFilter(e) {
-    const domain = document.getElementById('domain-filter').value;
-    const system = document.getElementById('system-filter').value;
-    const modular = document.getElementById('modular-filter').value;
-    const partName = document.getElementById('part-filter').value;
-    const sort = document.getElementById('sort-order').value;
-    const search = document.getElementById('search-input').value.toLowerCase();
+    const domainEl = document.getElementById('domain-filter');
+    const systemEl = document.getElementById('system-filter');
+    const modularEl = document.getElementById('modular-filter');
+    const partNameEl = document.getElementById('part-filter');
+    const sortEl = document.getElementById('sort-order');
+    const searchEl = document.getElementById('search-input');
+
+    if (!domainEl || !systemEl || !modularEl || !partNameEl || !sortEl || !searchEl) return;
+
+    const domain = domainEl.value;
+    const system = systemEl.value;
+    const modular = modularEl.value;
+    const partName = partNameEl.value;
+    const sort = sortEl.value;
+    const search = searchEl.value.toLowerCase();
 
     // 1. Update working data based on all filters
     filteredData = partsData.filter(d => {
@@ -60,31 +69,37 @@ function handleFilter(e) {
         const matchesSystem = !system || d.system === system;
         const matchesModular = !modular || d.modularSystem === modular;
         const matchesPart = !partName || d.part === partName;
+        
+        // Global Search: Across all text fields
         const matchesSearch = !search || 
-            d.domain.toLowerCase().includes(search) ||
-            d.system.toLowerCase().includes(search) ||
-            d.modularSystem.toLowerCase().includes(search) ||
-            d.part.toLowerCase().includes(search) ||
-            d.spec.toLowerCase().includes(search) ||
-            d.targetVehicle.toLowerCase().includes(search) ||
-            d.sharedVehicle.toLowerCase().includes(search);
+            (d.domain && d.domain.toLowerCase().includes(search)) ||
+            (d.system && d.system.toLowerCase().includes(search)) ||
+            (d.modularSystem && d.modularSystem.toLowerCase().includes(search)) ||
+            (d.part && d.part.toLowerCase().includes(search)) ||
+            (d.spec && d.spec.toLowerCase().includes(search)) ||
+            (d.targetVehicle && d.targetVehicle.toLowerCase().includes(search)) ||
+            (d.sharedVehicle && d.sharedVehicle.toLowerCase().includes(search));
 
         return matchesDomain && matchesSystem && matchesModular && matchesPart && matchesSearch;
     });
 
     // 2. Hierarchical UI Update: Refresh LOWER level filter options based on CURRENT selection
-    // We only refresh the options of levels BELOW the one that was just changed
     const changedId = e ? e.target.id : null;
     
+    // Determine data scope for updating filter options
+    // If a parent filter changes, we update child filters based on what matches the PARENT filter
     if (changedId === 'domain-filter' || !changedId) {
-        updateFilterOptions('system-filter', 'system', domain ? filteredData : partsData);
-        updateFilterOptions('modular-filter', 'modularSystem', domain ? filteredData : partsData);
-        updateFilterOptions('part-filter', 'part', domain ? filteredData : partsData);
+        const domainFiltered = domain ? partsData.filter(d => d.domain === domain) : partsData;
+        updateFilterOptions('system-filter', 'system', domainFiltered);
+        updateFilterOptions('modular-filter', 'modularSystem', domainFiltered);
+        updateFilterOptions('part-filter', 'part', domainFiltered);
     } else if (changedId === 'system-filter') {
-        updateFilterOptions('modular-filter', 'modularSystem', filteredData);
-        updateFilterOptions('part-filter', 'part', filteredData);
+        const systemFiltered = system ? partsData.filter(d => d.system === system) : partsData;
+        updateFilterOptions('modular-filter', 'modularSystem', systemFiltered);
+        updateFilterOptions('part-filter', 'part', systemFiltered);
     } else if (changedId === 'modular-filter') {
-        updateFilterOptions('part-filter', 'part', filteredData);
+        const modularFiltered = modular ? partsData.filter(d => d.modularSystem === modular) : partsData;
+        updateFilterOptions('part-filter', 'part', modularFiltered);
     }
 
     if (sort === 'asc') {
