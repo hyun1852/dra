@@ -176,12 +176,8 @@ function initTableHover() {
         if (!tr || !tr.classList.contains('group-row')) return;
 
         const allCells = Array.from(tr.children);
-        const cellIndex = allCells.indexOf(cell);
-        const totalCells = allCells.length;
         
-        // Skip highlight logic if hovering over the last 6 columns (vehicles)
-        if (cellIndex >= totalCells - 6) return;
-
+        // Always highlight parent merged cells based on the current row
         levels.forEach(level => {
             const cellId = tr.getAttribute(`data-${level}-link`);
             if (cellId) {
@@ -190,6 +186,8 @@ function initTableHover() {
             }
         });
         
+        // Highlight non-vehicle cells in the current row (columns 0 to total-7)
+        const totalCells = allCells.length;
         allCells.forEach((c, idx) => {
             if (idx < totalCells - 6) c.classList.add('cell-highlight');
         });
