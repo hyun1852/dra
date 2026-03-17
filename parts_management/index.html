@@ -46,6 +46,11 @@
 </head>
 <body class="bg-background text-foreground font-sans antialiased min-h-screen">
     <div class="relative flex min-h-screen flex-col">
+        <!-- Background Grid (Adaptive) -->
+        <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+            <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 50%, var(--radial-start) 0%, var(--radial-end) 100%);"></div>
+            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(hsl(var(--foreground)) 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
+        </div>
         <header class="container mx-auto px-4 py-16 lg:py-24 text-center relative z-10">
             <!-- Theme Toggle Unfixed -->
             <div class="absolute top-6 right-6">
