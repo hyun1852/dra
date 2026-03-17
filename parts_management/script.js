@@ -70,7 +70,6 @@ function handleFilter(e) {
         const matchesModular = !modular || d.modularSystem === modular;
         const matchesPart = !partName || d.part === partName;
         
-        // Global Search: Across all text fields
         const matchesSearch = !search || 
             (d.domain && d.domain.toLowerCase().includes(search)) ||
             (d.system && d.system.toLowerCase().includes(search)) ||
@@ -83,11 +82,9 @@ function handleFilter(e) {
         return matchesDomain && matchesSystem && matchesModular && matchesPart && matchesSearch;
     });
 
-    // 2. Hierarchical UI Update: Refresh LOWER level filter options based on CURRENT selection
+    // 2. Hierarchical UI Update: Cascading options
     const changedId = e ? e.target.id : null;
     
-    // Determine data scope for updating filter options
-    // If a parent filter changes, we update child filters based on what matches the PARENT filter
     if (changedId === 'domain-filter' || !changedId) {
         const domainFiltered = domain ? partsData.filter(d => d.domain === domain) : partsData;
         updateFilterOptions('system-filter', 'system', domainFiltered);
@@ -126,7 +123,7 @@ function updateFilterOptions(id, key, data) {
         const opt = document.createElement('option');
         opt.value = item;
         opt.textContent = item;
-        if (item === currentVal) opt.selected = true; // Preserve selection if possible
+        if (item === currentVal) opt.selected = true;
         select.appendChild(opt);
     });
 }
@@ -146,28 +143,16 @@ function renderDashboard() {
     const modularSet = new Set(filteredData.map(d => d.modularSystem));
     const specSet = new Set(filteredData.map(d => d.spec));
     
-    // Core Cost Logic
-    // Actual Cost: Sum of 'New' entries only
-    const actualSpentCost = filteredData.reduce((sum, d) => {
-        return d.sharedVehicle === "" ? sum + d.moldCost : sum;
-    }, 0);
-
-    // Potential Cost: Sum of all entries as if all were new
+    const actualSpentCost = filteredData.reduce((sum, d) => d.sharedVehicle === "" ? sum + d.moldCost : sum, 0);
     const potentialTotalCost = filteredData.reduce((sum, d) => sum + d.moldCost, 0);
+    const sharingRate = potentialTotalCost > 0 ? ((potentialTotalCost - actualSpentCost) / potentialTotalCost) * 100 : 0;
 
-    // Sharing Rate = (Potential - Actual) / Potential
-    const sharingRate = potentialTotalCost > 0 
-        ? ((potentialTotalCost - actualSpentCost) / potentialTotalCost) * 100 
-        : 0;
-
-    // Animate numbers
     animateNumber(totalDomainsEl, domainSet.size);
     animateNumber(totalSystemsEl, systemSet.size);
     animateNumber(totalModularsEl, modularSet.size);
     animateNumber(totalPartsEl, filteredData.length);
     animateNumber(totalSpecsEl, specSet.size);
     animateNumber(totalCostEl, actualSpentCost, true, 600);
-    
     sharingRateEl.textContent = `${Math.round(sharingRate)}%`;
 
     const groupedRows = [];
@@ -181,7 +166,6 @@ function renderDashboard() {
             groupedRows.push(existing);
         }
         existing.vehicles[item.targetVehicle] = item.sharedVehicle === "" ? "신규" : item.sharedVehicle;
-        // Sum only "New" development costs for this specific part/spec row
         if (item.sharedVehicle === "") {
             existing.totalInvestment += item.moldCost;
         }
@@ -210,7 +194,7 @@ function renderDashboard() {
         });
         html += `<td class="px-6 py-4 text-muted-foreground">${item.spec}</td>`;
         html += `<td class="px-6 py-4 font-bold text-muted-foreground text-right tabular-nums italic border-r border-border/50">${item.moldCost.toLocaleString()}</td>`;
-        html += `<td class="px-6 py-4 font-black text-foreground text-right tabular-nums bg-foreground/5 shadow-inner">${item.totalInvestment.toLocaleString()}</td>`;
+        html += `<td class="px-6 py-4 font-black text-foreground text-right tabular-nums border-r border-border/50">${item.totalInvestment.toLocaleString()}</td>`;
         
         vehicleList.forEach(vCode => {
             const status = item.vehicles[vCode] || "-";
@@ -218,13 +202,12 @@ function renderDashboard() {
             const bgClass = status === "신규" ? "bg-foreground/10" : (status !== "-" ? "bg-foreground/5" : "");
             html += `<td class="px-2 py-4 text-center text-[10px] ${statusClass} ${bgClass}">${status}</td>`;
         });
-        
         html += '</tr>';
     });
 
     tableBody.style.opacity = '0';
     setTimeout(() => {
-        tableBody.innerHTML = groupedRows.length > 0 ? html : '<tr><td colspan="12" class="text-center py-12 text-muted-foreground uppercase text-[10px] tracking-widest font-bold">No Data Found</td></tr>';
+        tableBody.innerHTML = groupedRows.length > 0 ? html : '<tr><td colspan="13" class="text-center py-12 text-muted-foreground uppercase text-[10px] tracking-widest font-bold">No Data Found</td></tr>';
         tableBody.style.opacity = '1';
         initTableHover();
     }, 50);
@@ -236,7 +219,6 @@ function renderDashboard() {
 function renderSharingChart(rate) {
     const fill = document.getElementById('sharing-rate-fill');
     const text = document.getElementById('sharing-rate-text');
-    
     if (fill && text) {
         fill.style.strokeDasharray = `${rate} 100`;
         text.textContent = `${Math.round(rate)}%`;
@@ -250,13 +232,9 @@ function initTableHover() {
     tableBody.addEventListener('mouseover', (e) => {
         const cell = e.target.closest('td');
         if (!cell) return;
-        
         const tr = cell.parentElement;
         if (!tr || !tr.classList.contains('group-row')) return;
-
         const allCells = Array.from(tr.children);
-        
-        // Always highlight parent merged cells based on the current row
         levels.forEach(level => {
             const cellId = tr.getAttribute(`data-${level}-link`);
             if (cellId) {
@@ -264,8 +242,6 @@ function initTableHover() {
                 if (parentCell) parentCell.classList.add('cell-highlight');
             }
         });
-        
-        // Highlight non-vehicle cells in the current row (columns up to vehicle columns)
         const totalCells = allCells.length;
         allCells.forEach((c, idx) => {
             if (idx < totalCells - 6) c.classList.add('cell-highlight');
@@ -275,10 +251,8 @@ function initTableHover() {
     tableBody.addEventListener('mouseout', (e) => {
         const tr = e.target.closest('tr');
         if (!tr) return;
-
         const allCells = Array.from(tr.children);
         allCells.forEach(c => c.classList.remove('cell-highlight'));
-
         levels.forEach(level => {
             const cellId = tr.getAttribute(`data-${level}-link`);
             if (cellId) {
@@ -292,7 +266,6 @@ function initTableHover() {
 function animateNumber(el, target, isCurrency = false, duration = 800) {
     const start = parseInt(el.textContent.replace(/[^0-9]/g, '')) || 0;
     const startTime = performance.now();
-
     function update(currentTime) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
@@ -331,32 +304,27 @@ function renderChart(data) {
     const legend = document.getElementById('chart-legend');
     const systemCosts = {};
     let total = 0;
-
     data.forEach(d => {
         if (d.sharedVehicle === "") {
             systemCosts[d.system] = (systemCosts[d.system] || 0) + d.moldCost;
             total += d.moldCost;
         }
     });
-
-    // High contrast monochrome palette
     const colors = ['#e5e5e5', '#a3a3a3', '#737373', '#404040', '#d4d4d4', '#525252'];
     let cumulativePercent = 0;
     let svgHtml = '';
     let legendHtml = '';
-
     const systems = Object.keys(systemCosts);
     systems.forEach((system, i) => {
         const cost = systemCosts[system];
         const percent = (cost / total) * 100;
         const color = colors[i % colors.length];
-
         svgHtml += `<circle r="15.9" cx="21" cy="21" fill="transparent" 
                      stroke="${color}" stroke-width="4" 
                      stroke-dasharray="${percent} ${100 - percent}" 
                      stroke-dashoffset="${-cumulativePercent}"
-                     class="transition-all duration-300 hover:stroke-foreground"></circle>`;
-
+                     class="transition-all duration-300 hover:stroke-foreground"
+                     style="stroke-linecap: butt;"></circle>`;
         legendHtml += `
             <div class="flex items-center justify-between text-[10px] uppercase font-bold tracking-tight group cursor-default">
                 <div class="flex items-center gap-2">
@@ -368,10 +336,8 @@ function renderChart(data) {
                     <span class="text-muted-foreground">(${cost}억)</span>
                 </div>
             </div>`;
-
         cumulativePercent += percent;
     });
-
     chart.innerHTML = total > 0 ? svgHtml : '';
     legend.innerHTML = total > 0 ? legendHtml : '<div class="text-center text-muted-foreground py-4 text-[10px] uppercase font-bold tracking-widest">No Data</div>';
 }
