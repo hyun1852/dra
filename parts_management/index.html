@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>부품 및 금형투자비 관리 시스템</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <header>
+            <h1>Parts & Mold Investment Dashboard</h1>
+            <div class="summary-cards">
+                <div class="card">
+                    <span class="label">총 도메인</span>
+                    <span id="total-domains" class="value">0</span>
+                </div>
+                <div class="card">
+                    <span class="label">총 시스템</span>
+                    <span id="total-systems" class="value">0</span>
+                </div>
+                <div class="card">
+                    <span class="label">총 부품 수 (사양 기준)</span>
+                    <span id="total-parts" class="value">0</span>
+                </div>
+                <div class="card highlight">
+                    <span class="label">총 금형투자비 합계</span>
+                    <span id="total-cost" class="value">0</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="table-container">
+                <table id="parts-table">
+                    <thead>
+                        <tr>
+                            <th>도메인 (L2)</th>
+                            <th>시스템 (L3)</th>
+                            <th>모듈러시스템 (L4)</th>
+                            <th>부품 (L5)</th>
+                            <th>사양</th>
+                            <th>금형투자비 (억원)</th>
+                            <th>대상 차종</th>
+                            <th>공용 차종</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Data will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
