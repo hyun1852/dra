@@ -1,46 +1,46 @@
 :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 226.3 70.6% 58.4%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    --radius: 0.5rem;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 3%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 0% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 100%;
+    --radius: 0.25rem;
 }
 
 [data-theme="light"] {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 0 0% 0%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 0% 90%;
+    --destructive-foreground: 0 0% 0%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 0%;
 }
 
 * {
@@ -58,22 +58,24 @@ body {
 
 /* Custom Table Styles */
 th, td {
-    border: 1px solid hsl(var(--border) / 0.5);
-    padding: 1rem;
+    border: 1px solid hsl(var(--border) / 0.3);
+    padding: 0.75rem 1.5rem;
 }
 
 tr:hover {
-    background-color: hsl(var(--muted) / 0.3);
+    background-color: hsl(var(--foreground) / 0.03);
 }
 
-/* Shared Vehicle Tag */
+/* Shared Vehicle Tag (Grayscale) */
 .shared-vehicle {
     display: inline-block;
     background: hsl(var(--secondary));
     color: hsl(var(--secondary-foreground));
     padding: 0.125rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.7rem;
+    border-radius: 2px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
     margin: 0.125rem;
     border: 1px solid hsl(var(--border));
 }
@@ -84,34 +86,22 @@ tr:hover {
 }
 
 .legend-color {
-    width: 0.75rem;
-    height: 0.75rem;
-    border-radius: 0.125rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
 }
 
-/* Border Beam Animation Styles */
-@keyframes border-beam {
-    100% {
-        offset-distance: 100%;
-    }
-}
-
-.animate-border-beam::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    padding: 2px;
-    border-radius: inherit;
-    background: conic-gradient(from 0deg, transparent, hsl(var(--primary)), transparent 25%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    offset-path: rect(0 100% 100% 0 round 0.75rem);
-    animation: border-beam calc(var(--duration, 4) * 1s) infinite linear;
-}
-
-/* Tracing Beam */
+/* Remove Animations */
+.animate-border-beam::before,
 #tracing-beam-point {
-    box-shadow: 0 0 15px hsl(var(--primary)), 0 0 5px hsl(var(--primary));
+    display: none !important;
+}
+
+/* Custom Select Styling */
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='grayscale(1)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1rem;
 }

@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initFilters();
     initTheme();
     renderDashboard();
-    initTracingBeam();
 
     // Event Listeners
     document.getElementById('system-filter').addEventListener('change', handleFilter);
@@ -29,9 +28,11 @@ function initFilters() {
 
 function fillSelect(id, items) {
     const select = document.getElementById(id);
-    select.innerHTML = '<option value="">전체 시스템</option>';
-    if (id === 'modular-filter') select.innerHTML = '<option value="">전체 모듈러</option>';
-    if (id === 'part-filter') select.innerHTML = '<option value="">전체 부품</option>';
+    let defaultText = '전체 시스템';
+    if (id === 'modular-filter') defaultText = '전체 모듈러';
+    if (id === 'part-filter') defaultText = '전체 부품';
+    
+    select.innerHTML = `<option value="">${defaultText}</option>`;
     
     items.forEach(item => {
         const opt = document.createElement('option');
@@ -67,61 +68,47 @@ function handleFilter() {
 
 function renderDashboard() {
     const tableBody = document.getElementById('table-body');
+    const totalDomainsEl = document.getElementById('total-domains');
     const totalSystemsEl = document.getElementById('total-systems');
     const totalModularsEl = document.getElementById('total-modulars');
     const totalPartsEl = document.getElementById('total-parts');
+    const totalSpecsEl = document.getElementById('total-specs');
     const totalCostEl = document.getElementById('total-cost');
 
+    const domainSet = new Set(filteredData.map(d => d.domain));
     const systemSet = new Set(filteredData.map(d => d.system));
     const modularSet = new Set(filteredData.map(d => d.modularSystem));
+    const specSet = new Set(filteredData.map(d => d.spec));
     const totalCost = filteredData.reduce((sum, d) => sum + d.moldCost, 0);
 
-    // Animate numbers
-    animateNumber(totalSystemsEl, systemSet.size);
-    animateNumber(totalModularsEl, modularSet.size);
-    animateNumber(totalPartsEl, filteredData.length);
-    animateNumber(totalCostEl, totalCost, true);
+    // Update numbers
+    totalDomainsEl.textContent = domainSet.size.toLocaleString();
+    totalSystemsEl.textContent = systemSet.size.toLocaleString();
+    totalModularsEl.textContent = modularSet.size.toLocaleString();
+    totalPartsEl.textContent = filteredData.length.toLocaleString();
+    totalSpecsEl.textContent = specSet.size.toLocaleString();
+    totalCostEl.textContent = totalCost.toLocaleString() + ' 억';
 
     const rowspans = calculateRowspans(filteredData);
     let html = '';
     filteredData.forEach((item, index) => {
-        html += '<tr class="transition-colors hover:bg-primary/5">';
+        html += '<tr class="transition-colors hover:bg-foreground/5">';
         const levels = ['domain', 'system', 'modularSystem', 'part'];
         levels.forEach(level => {
             if (rowspans[level][index]) {
-                html += `<td rowspan="${rowspans[level][index]}" class="px-6 py-4 font-medium text-foreground/80">${item[level]}</td>`;
+                html += `<td rowspan="${rowspans[level][index]}" class="px-6 py-4 font-bold text-foreground underline decoration-border/20">${item[level]}</td>`;
             }
         });
         html += `<td class="px-6 py-4 text-muted-foreground">${item.spec}</td>`;
-        html += `<td class="px-6 py-4 font-bold text-primary">${item.moldCost.toLocaleString()}</td>`;
-        html += `<td class="px-6 py-4"><span class="px-2 py-1 rounded bg-accent/50 text-xs border border-border">${item.targetVehicle}</span></td>`;
+        html += `<td class="px-6 py-4 font-black text-foreground">${item.moldCost.toLocaleString()}</td>`;
+        html += `<td class="px-6 py-4"><span class="px-2 py-1 rounded bg-foreground/5 text-[10px] font-bold border border-border uppercase">${item.targetVehicle}</span></td>`;
         html += `<td class="px-6 py-4">${formatSharedVehicles(item.sharedVehicle)}</td>`;
         html += '</tr>';
     });
 
-    tableBody.innerHTML = filteredData.length > 0 ? html : '<tr><td colspan="8" class="text-center py-12 text-muted-foreground">검색 결과가 없습니다.</td></tr>';
+    tableBody.innerHTML = filteredData.length > 0 ? html : '<tr><td colspan="8" class="text-center py-12 text-muted-foreground uppercase text-[10px] tracking-widest font-bold">No Data Found</td></tr>';
 
     renderChart(filteredData);
-}
-
-function animateNumber(el, target, isCurrency = false) {
-    const start = parseInt(el.textContent.replace(/[^0-9]/g, '')) || 0;
-    const duration = 1000;
-    const startTime = performance.now();
-
-    function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easeOutQuad = progress * (2 - progress);
-        const current = Math.floor(start + (target - start) * easeOutQuad);
-        
-        el.textContent = isCurrency ? current.toLocaleString() + ' 억' : current.toLocaleString();
-
-        if (progress < 1) {
-            requestAnimationFrame(update);
-        }
-    }
-    requestAnimationFrame(update);
 }
 
 function calculateRowspans(data) {
@@ -162,8 +149,8 @@ function renderChart(data) {
         total += d.moldCost;
     });
 
-    // Modern color palette
-    const colors = ['#6366f1', '#a855f7', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
+    // Monochrome palette
+    const colors = ['#ffffff', '#e5e5e5', '#a3a3a3', '#525252', '#262626', '#171717'];
     let cumulativePercent = 0;
     let svgHtml = '';
     let legendHtml = '';
@@ -178,17 +165,17 @@ function renderChart(data) {
                      stroke="${color}" stroke-width="6" 
                      stroke-dasharray="${percent} ${100 - percent}" 
                      stroke-dashoffset="${-cumulativePercent}"
-                     class="transition-all duration-500 hover:stroke-white"></circle>`;
+                     class="transition-all duration-300 hover:stroke-foreground"></circle>`;
 
         legendHtml += `
-            <div class="flex items-center justify-between text-sm group cursor-default">
-                <div class="flex items-center gap-3">
-                    <span class="w-3 h-3 rounded-full" style="background:${color}"></span>
+            <div class="flex items-center justify-between text-[10px] uppercase font-bold tracking-tight group cursor-default">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full border border-border" style="background:${color}"></span>
                     <span class="text-muted-foreground group-hover:text-foreground transition-colors">${system}</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="font-bold text-foreground">${Math.round(percent)}%</span>
-                    <span class="text-xs text-muted-foreground">(${cost}억)</span>
+                    <span class="text-foreground">${Math.round(percent)}%</span>
+                    <span class="text-muted-foreground">(${cost}억)</span>
                 </div>
             </div>`;
 
@@ -196,7 +183,7 @@ function renderChart(data) {
     });
 
     chart.innerHTML = total > 0 ? svgHtml : '';
-    legend.innerHTML = total > 0 ? legendHtml : '<div class="text-center text-muted-foreground py-4">데이터 없음</div>';
+    legend.innerHTML = total > 0 ? legendHtml : '<div class="text-center text-muted-foreground py-4 text-[10px] uppercase font-bold tracking-widest">No Data</div>';
 }
 
 // Theme Toggle
@@ -218,14 +205,5 @@ function toggleTheme() {
 
 function updateThemeBtn(t) {
     const btn = document.getElementById('theme-toggle');
-    btn.textContent = t === 'dark' ? 'Light Mode ☀️' : 'Dark Mode 🌙';
-}
-
-// Tracing Beam Logic
-function initTracingBeam() {
-    const beamPoint = document.getElementById('tracing-beam-point');
-    window.addEventListener('scroll', () => {
-        const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-        beamPoint.style.top = `${scrollPercent}%`;
-    });
+    btn.textContent = t === 'dark' ? 'LIGHT' : 'DARK';
 }
