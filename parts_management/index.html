@@ -84,8 +84,12 @@
                         <span id="total-specs" class="text-2xl font-bold text-foreground">0</span>
                     </div>
                     <div class="flex flex-col items-center justify-center space-y-2 p-4 bg-foreground/10 rounded-lg border border-foreground/20">
-                        <span class="text-foreground text-[10px] uppercase tracking-wider font-bold">총 금형투자비</span>
+                        <span class="text-foreground text-[10px] uppercase tracking-wider font-bold">총 금형투자비(억)</span>
                         <span id="total-cost" class="text-2xl font-bold text-foreground">0</span>
+                    </div>
+                    <div class="flex flex-col items-center justify-center space-y-2 p-4 bg-foreground/10 rounded-lg border border-foreground/20">
+                        <span class="text-foreground text-[10px] uppercase tracking-wider font-bold">금형공용화율</span>
+                        <span id="sharing-rate" class="text-2xl font-bold text-foreground text-primary">0%</span>
                     </div>
                 </div>
             </div>
@@ -157,19 +161,33 @@
                 <!-- Chart Area (Grayscale) -->
                 <aside class="space-y-6">
                     <div class="rounded-xl border border-border bg-background/40 p-6 backdrop-blur-sm shadow-lg sticky top-8">
-                        <h3 class="text-sm font-bold uppercase tracking-widest mb-6 text-foreground">시스템별 투자비 비중</h3>
-                        <div id="chart-area" class="flex flex-col items-center">
+                        <h3 class="text-sm font-bold uppercase tracking-widest mb-6 text-foreground text-center border-b border-border pb-4">시스템별 투자비 비중</h3>
+                        <div id="chart-area" class="flex flex-col items-center mb-12">
                             <div class="relative w-48 h-48 mb-8">
                                 <svg id="mold-chart" class="w-full h-full transform -rotate-90" viewBox="0 0 42 42">
                                     <!-- Pie chart segments will be injected here -->
                                 </svg>
                                 <div class="absolute inset-0 flex items-center justify-center">
                                     <div class="bg-background rounded-full w-24 h-24 flex items-center justify-center border border-border">
-                                        <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Shares</span>
+                                        <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Investment</span>
                                     </div>
                                 </div>
                             </div>
                             <div id="chart-legend" class="w-full space-y-3"></div>
+                        </div>
+
+                        <h3 class="text-sm font-bold uppercase tracking-widest mb-6 text-foreground text-center border-b border-border pb-4">금형공용화율 현황</h3>
+                        <div id="sharing-chart-area" class="flex flex-col items-center">
+                            <div class="relative w-48 h-48 mb-4">
+                                <svg id="sharing-rate-chart" class="w-full h-full transform -rotate-90" viewBox="0 0 42 42">
+                                    <circle r="15.9" cx="21" cy="21" fill="transparent" stroke="hsl(var(--secondary))" stroke-width="4"></circle>
+                                    <circle id="sharing-rate-fill" r="15.9" cx="21" cy="21" fill="transparent" stroke="currentColor" stroke-width="4" stroke-dasharray="0 100" class="text-foreground transition-all duration-1000 ease-out"></circle>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span id="sharing-rate-text" class="text-2xl font-black">0%</span>
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-muted-foreground text-center px-4 leading-relaxed">전체 잠재 투자비 대비 <br/>공용화로 절감된 비용의 비율</p>
                         </div>
                     </div>
                 </aside>

@@ -90,22 +90,36 @@ function renderDashboard() {
     const totalPartsEl = document.getElementById('total-parts');
     const totalSpecsEl = document.getElementById('total-specs');
     const totalCostEl = document.getElementById('total-cost');
+    const sharingRateEl = document.getElementById('sharing-rate');
 
     const domainSet = new Set(filteredData.map(d => d.domain));
     const systemSet = new Set(filteredData.map(d => d.system));
     const modularSet = new Set(filteredData.map(d => d.modularSystem));
     const specSet = new Set(filteredData.map(d => d.spec));
     
-    const totalCost = filteredData.reduce((sum, d) => {
+    // Core Cost Logic
+    // Actual Cost: Sum of 'New' entries only
+    const actualSpentCost = filteredData.reduce((sum, d) => {
         return d.sharedVehicle === "" ? sum + d.moldCost : sum;
     }, 0);
 
+    // Potential Cost: Sum of all entries as if all were new
+    const potentialTotalCost = filteredData.reduce((sum, d) => sum + d.moldCost, 0);
+
+    // Sharing Rate = (Potential - Actual) / Potential
+    const sharingRate = potentialTotalCost > 0 
+        ? ((potentialTotalCost - actualSpentCost) / potentialTotalCost) * 100 
+        : 0;
+
+    // Animate numbers
     animateNumber(totalDomainsEl, domainSet.size);
     animateNumber(totalSystemsEl, systemSet.size);
     animateNumber(totalModularsEl, modularSet.size);
     animateNumber(totalPartsEl, filteredData.length);
     animateNumber(totalSpecsEl, specSet.size);
-    animateNumber(totalCostEl, totalCost, true, 600);
+    animateNumber(totalCostEl, actualSpentCost, true, 600);
+    
+    sharingRateEl.textContent = `${Math.round(sharingRate)}%`;
 
     const groupedRows = [];
     const vehicleList = ["NE2", "NV1", "JK2", "JW2", "ME2", "MV2"];
@@ -162,6 +176,17 @@ function renderDashboard() {
     }, 50);
 
     renderChart(filteredData);
+    renderSharingChart(sharingRate);
+}
+
+function renderSharingChart(rate) {
+    const fill = document.getElementById('sharing-rate-fill');
+    const text = document.getElementById('sharing-rate-text');
+    
+    if (fill && text) {
+        fill.style.strokeDasharray = `${rate} 100`;
+        text.textContent = `${Math.round(rate)}%`;
+    }
 }
 
 function initTableHover() {
