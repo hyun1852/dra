@@ -177,10 +177,14 @@ function renderDashboard() {
         const key = `${item.domain}-${item.system}-${item.modularSystem}-${item.part}-${item.spec}`;
         let existing = groupedRows.find(r => r.key === key);
         if (!existing) {
-            existing = { ...item, key, vehicles: {} };
+            existing = { ...item, key, vehicles: {}, totalInvestment: 0 };
             groupedRows.push(existing);
         }
         existing.vehicles[item.targetVehicle] = item.sharedVehicle === "" ? "신규" : item.sharedVehicle;
+        // Sum only "New" development costs for this specific part/spec row
+        if (item.sharedVehicle === "") {
+            existing.totalInvestment += item.moldCost;
+        }
     });
 
     const rowspans = calculateRowspans(groupedRows);
@@ -205,11 +209,12 @@ function renderDashboard() {
             }
         });
         html += `<td class="px-6 py-4 text-muted-foreground">${item.spec}</td>`;
-        html += `<td class="px-6 py-4 font-black text-foreground text-right tabular-nums">${item.moldCost.toLocaleString()}</td>`;
+        html += `<td class="px-6 py-4 font-bold text-muted-foreground text-right tabular-nums italic border-r border-border/50">${item.moldCost.toLocaleString()}</td>`;
+        html += `<td class="px-6 py-4 font-black text-foreground text-right tabular-nums bg-foreground/5 shadow-inner">${item.totalInvestment.toLocaleString()}</td>`;
         
         vehicleList.forEach(vCode => {
             const status = item.vehicles[vCode] || "-";
-            const statusClass = status === "신규" ? "text-foreground font-bold" : "text-muted-foreground";
+            const statusClass = status === "신규" ? "text-foreground font-black" : "text-muted-foreground";
             const bgClass = status === "신규" ? "bg-foreground/10" : (status !== "-" ? "bg-foreground/5" : "");
             html += `<td class="px-2 py-4 text-center text-[10px] ${statusClass} ${bgClass}">${status}</td>`;
         });
