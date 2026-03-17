@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initFilters();
     initTheme();
     renderDashboard();
+    initTracingBeam();
 
     // Event Listeners
     document.getElementById('system-filter').addEventListener('change', handleFilter);
@@ -28,8 +29,10 @@ function initFilters() {
 
 function fillSelect(id, items) {
     const select = document.getElementById(id);
-    // Keep the "All" option
-    select.innerHTML = '<option value="">전체</option>';
+    select.innerHTML = '<option value="">전체 시스템</option>';
+    if (id === 'modular-filter') select.innerHTML = '<option value="">전체 모듈러</option>';
+    if (id === 'part-filter') select.innerHTML = '<option value="">전체 부품</option>';
+    
     items.forEach(item => {
         const opt = document.createElement('option');
         opt.value = item;
@@ -53,7 +56,6 @@ function handleFilter() {
         return matchesSystem && matchesModular && matchesPart && matchesSearch;
     });
 
-    // Sorting
     if (sort === 'asc') {
         filteredData.sort((a, b) => a.moldCost - b.moldCost);
     } else if (sort === 'desc') {
@@ -70,37 +72,56 @@ function renderDashboard() {
     const totalPartsEl = document.getElementById('total-parts');
     const totalCostEl = document.getElementById('total-cost');
 
-    // Summaries
     const systemSet = new Set(filteredData.map(d => d.system));
     const modularSet = new Set(filteredData.map(d => d.modularSystem));
     const totalCost = filteredData.reduce((sum, d) => sum + d.moldCost, 0);
 
-    totalSystemsEl.textContent = systemSet.size;
-    totalModularsEl.textContent = modularSet.size;
-    totalPartsEl.textContent = filteredData.length;
-    totalCostEl.textContent = totalCost.toLocaleString() + ' 억';
+    // Animate numbers
+    animateNumber(totalSystemsEl, systemSet.size);
+    animateNumber(totalModularsEl, modularSet.size);
+    animateNumber(totalPartsEl, filteredData.length);
+    animateNumber(totalCostEl, totalCost, true);
 
-    // Render Table
     const rowspans = calculateRowspans(filteredData);
     let html = '';
     filteredData.forEach((item, index) => {
-        html += '<tr>';
+        html += '<tr class="transition-colors hover:bg-primary/5">';
         const levels = ['domain', 'system', 'modularSystem', 'part'];
         levels.forEach(level => {
             if (rowspans[level][index]) {
-                html += `<td rowspan="${rowspans[level][index]}">${item[level]}</td>`;
+                html += `<td rowspan="${rowspans[level][index]}" class="px-6 py-4 font-medium text-foreground/80">${item[level]}</td>`;
             }
         });
-        html += `<td>${item.spec}</td>`;
-        html += `<td>${item.moldCost.toLocaleString()}</td>`;
-        html += `<td>${item.targetVehicle}</td>`;
-        html += `<td>${formatSharedVehicles(item.sharedVehicle)}</td>`;
+        html += `<td class="px-6 py-4 text-muted-foreground">${item.spec}</td>`;
+        html += `<td class="px-6 py-4 font-bold text-primary">${item.moldCost.toLocaleString()}</td>`;
+        html += `<td class="px-6 py-4"><span class="px-2 py-1 rounded bg-accent/50 text-xs border border-border">${item.targetVehicle}</span></td>`;
+        html += `<td class="px-6 py-4">${formatSharedVehicles(item.sharedVehicle)}</td>`;
         html += '</tr>';
     });
 
-    tableBody.innerHTML = filteredData.length > 0 ? html : '<tr><td colspan="8">데이터가 없습니다.</td></tr>';
+    tableBody.innerHTML = filteredData.length > 0 ? html : '<tr><td colspan="8" class="text-center py-12 text-muted-foreground">검색 결과가 없습니다.</td></tr>';
 
     renderChart(filteredData);
+}
+
+function animateNumber(el, target, isCurrency = false) {
+    const start = parseInt(el.textContent.replace(/[^0-9]/g, '')) || 0;
+    const duration = 1000;
+    const startTime = performance.now();
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOutQuad = progress * (2 - progress);
+        const current = Math.floor(start + (target - start) * easeOutQuad);
+        
+        el.textContent = isCurrency ? current.toLocaleString() + ' 억' : current.toLocaleString();
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    requestAnimationFrame(update);
 }
 
 function calculateRowspans(data) {
@@ -130,7 +151,6 @@ function formatSharedVehicles(str) {
     return str.split(',').map(v => `<span class="shared-vehicle">${v.trim()}</span>`).join('');
 }
 
-// Chart Logic
 function renderChart(data) {
     const chart = document.getElementById('mold-chart');
     const legend = document.getElementById('chart-legend');
@@ -142,46 +162,70 @@ function renderChart(data) {
         total += d.moldCost;
     });
 
-    const colors = ['#002c5f', '#007fa8', '#3a7bd5', '#4fc3f7', '#01579b'];
+    // Modern color palette
+    const colors = ['#6366f1', '#a855f7', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
     let cumulativePercent = 0;
     let svgHtml = '';
     let legendHtml = '';
 
-    Object.keys(systemCosts).forEach((system, i) => {
+    const systems = Object.keys(systemCosts);
+    systems.forEach((system, i) => {
         const cost = systemCosts[system];
         const percent = (cost / total) * 100;
         const color = colors[i % colors.length];
 
-        // Draw SVG circle segments
         svgHtml += `<circle r="15.9" cx="21" cy="21" fill="transparent" 
-                     stroke="${color}" stroke-width="10" 
+                     stroke="${color}" stroke-width="6" 
                      stroke-dasharray="${percent} ${100 - percent}" 
-                     stroke-dashoffset="${-cumulativePercent}"></circle>`;
+                     stroke-dashoffset="${-cumulativePercent}"
+                     class="transition-all duration-500 hover:stroke-white"></circle>`;
 
-        legendHtml += `<div class="legend-item">
-            <span class="legend-color" style="background:${color}"></span>
-            <span>${system}: ${Math.round(percent)}% (${cost}억)</span>
-        </div>`;
+        legendHtml += `
+            <div class="flex items-center justify-between text-sm group cursor-default">
+                <div class="flex items-center gap-3">
+                    <span class="w-3 h-3 rounded-full" style="background:${color}"></span>
+                    <span class="text-muted-foreground group-hover:text-foreground transition-colors">${system}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-foreground">${Math.round(percent)}%</span>
+                    <span class="text-xs text-muted-foreground">(${cost}억)</span>
+                </div>
+            </div>`;
 
         cumulativePercent += percent;
     });
 
     chart.innerHTML = total > 0 ? svgHtml : '';
-    legend.innerHTML = total > 0 ? legendHtml : '데이터 없음';
+    legend.innerHTML = total > 0 ? legendHtml : '<div class="text-center text-muted-foreground py-4">데이터 없음</div>';
 }
 
-// Theme
+// Theme Toggle
 function initTheme() {
-    const theme = localStorage.getItem('theme') || 'light';
+    const theme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.className = theme;
     document.documentElement.setAttribute('data-theme', theme);
     updateThemeBtn(theme);
 }
+
 function toggleTheme() {
-    const now = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', now);
-    localStorage.setItem('theme', now);
-    updateThemeBtn(now);
+    const isDark = document.documentElement.classList.contains('dark');
+    const newTheme = isDark ? 'light' : 'dark';
+    document.documentElement.className = newTheme;
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeBtn(newTheme);
 }
+
 function updateThemeBtn(t) {
-    document.getElementById('theme-toggle').textContent = t === 'dark' ? 'Light Mode☀️' : 'Dark Mode🌙';
+    const btn = document.getElementById('theme-toggle');
+    btn.textContent = t === 'dark' ? 'Light Mode ☀️' : 'Dark Mode 🌙';
+}
+
+// Tracing Beam Logic
+function initTracingBeam() {
+    const beamPoint = document.getElementById('tracing-beam-point');
+    window.addEventListener('scroll', () => {
+        const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+        beamPoint.style.top = `${scrollPercent}%`;
+    });
 }
