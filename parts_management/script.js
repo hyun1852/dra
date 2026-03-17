@@ -87,22 +87,35 @@ function renderDashboard() {
     animateNumber(totalModularsEl, modularSet.size);
     animateNumber(totalPartsEl, filteredData.length);
     animateNumber(totalSpecsEl, specSet.size);
-    animateNumber(totalCostEl, totalCost, true, 400); // Faster duration for Mold Cost
+    animateNumber(totalCostEl, totalCost, true, 600); // Updated to 600ms
 
     const rowspans = calculateRowspans(filteredData);
+    const groupCounters = { domain: 0, system: 0, modularSystem: 0, part: 0 };
+    const lastCellIds = { domain: '', system: '', modularSystem: '', part: '' };
+
     let html = '';
     filteredData.forEach((item, index) => {
-        html += '<tr class="transition-colors hover:bg-foreground/5">';
         const levels = ['domain', 'system', 'modularSystem', 'part'];
+        
+        // Prepare data attributes for the row to link to its parent merged cells
+        let rowDataAttrs = '';
         levels.forEach(level => {
             if (rowspans[level][index]) {
-                html += `<td rowspan="${rowspans[level][index]}" class="px-6 py-4 font-bold text-foreground underline decoration-border/20">${item[level]}</td>`;
+                lastCellIds[level] = `cell-${level}-${groupCounters[level]++}`;
+            }
+            rowDataAttrs += ` data-${level}-link="${lastCellIds[level]}"`;
+        });
+
+        html += `<tr class="transition-colors hover:bg-foreground/5 group-row" ${rowDataAttrs}>`;
+        levels.forEach(level => {
+            if (rowspans[level][index]) {
+                html += `<td id="${lastCellIds[level]}" rowspan="${rowspans[level][index]}" class="px-6 py-4 font-bold text-foreground underline decoration-border/20 transition-colors">${item[level]}</td>`;
             }
         });
         html += `<td class="px-6 py-4 text-muted-foreground">${item.spec}</td>`;
         html += `<td class="px-6 py-4 font-black text-foreground text-right tabular-nums">${item.moldCost.toLocaleString()}</td>`;
-        html += `<td class="px-6 py-4"><span class="px-2 py-1 rounded bg-foreground/5 text-[10px] font-bold border border-border uppercase">${item.targetVehicle}</span></td>`;
-        html += `<td class="px-6 py-4">${formatSharedVehicles(item.sharedVehicle)}</td>`;
+        html += `<td class="px-6 py-4 text-center"><span class="px-2 py-1 rounded bg-foreground/5 text-[10px] font-bold border border-border uppercase">${item.targetVehicle}</span></td>`;
+        html += `<td class="px-6 py-4 text-center">${formatSharedVehicles(item.sharedVehicle)}</td>`;
         html += '</tr>';
     });
 
@@ -111,9 +124,41 @@ function renderDashboard() {
     setTimeout(() => {
         tableBody.innerHTML = filteredData.length > 0 ? html : '<tr><td colspan="8" class="text-center py-12 text-muted-foreground uppercase text-[10px] tracking-widest font-bold">No Data Found</td></tr>';
         tableBody.style.opacity = '1';
+        initTableHover(); // Re-initialize hover listeners
     }, 50);
 
     renderChart(filteredData);
+}
+
+function initTableHover() {
+    const tableBody = document.getElementById('table-body');
+    const levels = ['domain', 'system', 'modularSystem', 'part'];
+
+    tableBody.addEventListener('mouseover', (e) => {
+        const tr = e.target.closest('tr');
+        if (!tr || !tr.classList.contains('group-row')) return;
+
+        levels.forEach(level => {
+            const cellId = tr.getAttribute(`data-${level}-link`);
+            if (cellId) {
+                const cell = document.getElementById(cellId);
+                if (cell) cell.classList.add('bg-foreground/10');
+            }
+        });
+    });
+
+    tableBody.addEventListener('mouseout', (e) => {
+        const tr = e.target.closest('tr');
+        if (!tr) return;
+
+        levels.forEach(level => {
+            const cellId = tr.getAttribute(`data-${level}-link`);
+            if (cellId) {
+                const cell = document.getElementById(cellId);
+                if (cell) cell.classList.remove('bg-foreground/10');
+            }
+        });
+    });
 }
 
 function animateNumber(el, target, isCurrency = false, duration = 800) {
