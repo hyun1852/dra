@@ -160,18 +160,13 @@ th {
 }
 
 /* Alignments */
-td:nth-child(1), td:nth-child(2), td:nth-child(3), td:nth-child(4) {
-    text-align: center;
+td:nth-child(1), td:nth-child(2), td:nth-child(3), td:nth-child(4), 
+td:nth-child(5), td:nth-child(7), td:nth-child(8) {
+    text-align: center; /* All text columns: Center-aligned */
 }
-
-td:nth-child(5) { text-align: left; }
 
 td:nth-child(6) { 
-    text-align: right; /* Mold Cost: Right-aligned */
-}
-
-td:nth-child(7), td:nth-child(8) { 
-    text-align: center; /* Vehicle info: Center-aligned */
+    text-align: right; /* Mold Cost (Number): Right-aligned */
 }
 
 tbody tr:hover {
