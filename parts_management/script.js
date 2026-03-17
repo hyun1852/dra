@@ -60,7 +60,7 @@ function handleFilter() {
         const matchesModular = !modular || d.modularSystem === modular;
         const matchesPart = !partName || d.part === partName;
         
-        // Global Search: Search across all relevant text fields
+        // Global Search: Across all text fields
         const matchesSearch = !search || 
             d.domain.toLowerCase().includes(search) ||
             d.system.toLowerCase().includes(search) ||
@@ -91,18 +91,15 @@ function renderDashboard() {
     const totalSpecsEl = document.getElementById('total-specs');
     const totalCostEl = document.getElementById('total-cost');
 
-    // Filtered data is used for summary calculations
     const domainSet = new Set(filteredData.map(d => d.domain));
     const systemSet = new Set(filteredData.map(d => d.system));
     const modularSet = new Set(filteredData.map(d => d.modularSystem));
     const specSet = new Set(filteredData.map(d => d.spec));
     
-    // Core Cost Logic: Only sum entries where sharedVehicle is empty (New development)
     const totalCost = filteredData.reduce((sum, d) => {
         return d.sharedVehicle === "" ? sum + d.moldCost : sum;
     }, 0);
 
-    // Animate numbers
     animateNumber(totalDomainsEl, domainSet.size);
     animateNumber(totalSystemsEl, systemSet.size);
     animateNumber(totalModularsEl, modularSet.size);
@@ -110,7 +107,6 @@ function renderDashboard() {
     animateNumber(totalSpecsEl, specSet.size);
     animateNumber(totalCostEl, totalCost, true, 600);
 
-    // Grouping Logic for the Table: One row per unique (domain, system, modular, part, spec)
     const groupedRows = [];
     const vehicleList = ["NE2", "NV1", "JK2", "JW2", "ME2", "MV2"];
 
@@ -121,7 +117,6 @@ function renderDashboard() {
             existing = { ...item, key, vehicles: {} };
             groupedRows.push(existing);
         }
-        // Fill vehicle status
         existing.vehicles[item.targetVehicle] = item.sharedVehicle === "" ? "신규" : item.sharedVehicle;
     });
 
@@ -149,7 +144,6 @@ function renderDashboard() {
         html += `<td class="px-6 py-4 text-muted-foreground">${item.spec}</td>`;
         html += `<td class="px-6 py-4 font-black text-foreground text-right tabular-nums">${item.moldCost.toLocaleString()}</td>`;
         
-        // Render 6 vehicle columns
         vehicleList.forEach(vCode => {
             const status = item.vehicles[vCode] || "-";
             const statusClass = status === "신규" ? "text-foreground font-bold" : "text-muted-foreground";
@@ -175,15 +169,29 @@ function initTableHover() {
     const levels = ['domain', 'system', 'modularSystem', 'part'];
 
     tableBody.addEventListener('mouseover', (e) => {
-        const tr = e.target.closest('tr');
+        const cell = e.target.closest('td');
+        if (!cell) return;
+        
+        const tr = cell.parentElement;
         if (!tr || !tr.classList.contains('group-row')) return;
+
+        const allCells = Array.from(tr.children);
+        const cellIndex = allCells.indexOf(cell);
+        const totalCells = allCells.length;
+        
+        // Skip highlight logic if hovering over the last 6 columns (vehicles)
+        if (cellIndex >= totalCells - 6) return;
 
         levels.forEach(level => {
             const cellId = tr.getAttribute(`data-${level}-link`);
             if (cellId) {
-                const cell = document.getElementById(cellId);
-                if (cell) cell.classList.add('cell-highlight');
+                const parentCell = document.getElementById(cellId);
+                if (parentCell) parentCell.classList.add('cell-highlight');
             }
+        });
+        
+        allCells.forEach((c, idx) => {
+            if (idx < totalCells - 6) c.classList.add('cell-highlight');
         });
     });
 
@@ -191,11 +199,14 @@ function initTableHover() {
         const tr = e.target.closest('tr');
         if (!tr) return;
 
+        const allCells = Array.from(tr.children);
+        allCells.forEach(c => c.classList.remove('cell-highlight'));
+
         levels.forEach(level => {
             const cellId = tr.getAttribute(`data-${level}-link`);
             if (cellId) {
-                const cell = document.getElementById(cellId);
-                if (cell) cell.classList.remove('cell-highlight');
+                const parentCell = document.getElementById(cellId);
+                if (parentCell) parentCell.classList.remove('cell-highlight');
             }
         });
     });
@@ -210,12 +221,8 @@ function animateNumber(el, target, isCurrency = false, duration = 800) {
         const progress = Math.min(elapsed / duration, 1);
         const easeOutQuad = progress * (2 - progress);
         const current = Math.floor(start + (target - start) * easeOutQuad);
-        
         el.textContent = isCurrency ? current.toLocaleString() + ' 억' : current.toLocaleString();
-
-        if (progress < 1) {
-            requestAnimationFrame(update);
-        }
+        if (progress < 1) requestAnimationFrame(update);
     }
     requestAnimationFrame(update);
 }
@@ -242,11 +249,6 @@ function calculateRowspans(data) {
     return spans;
 }
 
-function formatSharedVehicles(str) {
-    if (!str) return '-';
-    return str.split(',').map(v => `<span class="shared-vehicle">${v.trim()}</span>`).join('');
-}
-
 function renderChart(data) {
     const chart = document.getElementById('mold-chart');
     const legend = document.getElementById('chart-legend');
@@ -254,12 +256,14 @@ function renderChart(data) {
     let total = 0;
 
     data.forEach(d => {
-        systemCosts[d.system] = (systemCosts[d.system] || 0) + d.moldCost;
-        total += d.moldCost;
+        if (d.sharedVehicle === "") {
+            systemCosts[d.system] = (systemCosts[d.system] || 0) + d.moldCost;
+            total += d.moldCost;
+        }
     });
 
-    // Monochrome palette with higher contrast
-    const colors = ['#ffffff', '#bbbbbb', '#888888', '#555555', '#333333', '#111111'];
+    // High contrast monochrome palette
+    const colors = ['#e5e5e5', '#a3a3a3', '#737373', '#404040', '#d4d4d4', '#525252'];
     let cumulativePercent = 0;
     let svgHtml = '';
     let legendHtml = '';
@@ -295,7 +299,6 @@ function renderChart(data) {
     legend.innerHTML = total > 0 ? legendHtml : '<div class="text-center text-muted-foreground py-4 text-[10px] uppercase font-bold tracking-widest">No Data</div>';
 }
 
-// Theme Toggle
 function initTheme() {
     const theme = localStorage.getItem('theme') || 'dark';
     document.documentElement.className = theme;
