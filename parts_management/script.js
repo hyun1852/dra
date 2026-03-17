@@ -75,11 +75,16 @@ function renderDashboard() {
     const totalSpecsEl = document.getElementById('total-specs');
     const totalCostEl = document.getElementById('total-cost');
 
+    // Filtered data is used for summary calculations
     const domainSet = new Set(filteredData.map(d => d.domain));
     const systemSet = new Set(filteredData.map(d => d.system));
     const modularSet = new Set(filteredData.map(d => d.modularSystem));
     const specSet = new Set(filteredData.map(d => d.spec));
-    const totalCost = filteredData.reduce((sum, d) => sum + d.moldCost, 0);
+    
+    // Core Cost Logic: Only sum entries where sharedVehicle is empty (New development)
+    const totalCost = filteredData.reduce((sum, d) => {
+        return d.sharedVehicle === "" ? sum + d.moldCost : sum;
+    }, 0);
 
     // Animate numbers
     animateNumber(totalDomainsEl, domainSet.size);
@@ -87,17 +92,30 @@ function renderDashboard() {
     animateNumber(totalModularsEl, modularSet.size);
     animateNumber(totalPartsEl, filteredData.length);
     animateNumber(totalSpecsEl, specSet.size);
-    animateNumber(totalCostEl, totalCost, true, 600); // Updated to 600ms
+    animateNumber(totalCostEl, totalCost, true, 600);
 
-    const rowspans = calculateRowspans(filteredData);
+    // Grouping Logic for the Table: One row per unique (domain, system, modular, part, spec)
+    const groupedRows = [];
+    const vehicleList = ["NE2", "NV1", "JK2", "JW2", "ME2", "MV2"];
+
+    filteredData.forEach(item => {
+        const key = `${item.domain}-${item.system}-${item.modularSystem}-${item.part}-${item.spec}`;
+        let existing = groupedRows.find(r => r.key === key);
+        if (!existing) {
+            existing = { ...item, key, vehicles: {} };
+            groupedRows.push(existing);
+        }
+        // Fill vehicle status
+        existing.vehicles[item.targetVehicle] = item.sharedVehicle === "" ? "신규" : item.sharedVehicle;
+    });
+
+    const rowspans = calculateRowspans(groupedRows);
     const groupCounters = { domain: 0, system: 0, modularSystem: 0, part: 0 };
     const lastCellIds = { domain: '', system: '', modularSystem: '', part: '' };
 
     let html = '';
-    filteredData.forEach((item, index) => {
+    groupedRows.forEach((item, index) => {
         const levels = ['domain', 'system', 'modularSystem', 'part'];
-        
-        // Prepare data attributes for the row to link to its parent merged cells
         let rowDataAttrs = '';
         levels.forEach(level => {
             if (rowspans[level][index]) {
@@ -114,17 +132,23 @@ function renderDashboard() {
         });
         html += `<td class="px-6 py-4 text-muted-foreground">${item.spec}</td>`;
         html += `<td class="px-6 py-4 font-black text-foreground text-right tabular-nums">${item.moldCost.toLocaleString()}</td>`;
-        html += `<td class="px-6 py-4 text-center"><span class="px-2 py-1 rounded bg-foreground/5 text-[10px] font-bold border border-border uppercase">${item.targetVehicle}</span></td>`;
-        html += `<td class="px-6 py-4 text-center">${formatSharedVehicles(item.sharedVehicle)}</td>`;
+        
+        // Render 6 vehicle columns
+        vehicleList.forEach(vCode => {
+            const status = item.vehicles[vCode] || "-";
+            const statusClass = status === "신규" ? "text-foreground font-bold" : "text-muted-foreground";
+            const bgClass = status === "신규" ? "bg-foreground/10" : (status !== "-" ? "bg-foreground/5" : "");
+            html += `<td class="px-2 py-4 text-center text-[10px] ${statusClass} ${bgClass}">${status}</td>`;
+        });
+        
         html += '</tr>';
     });
 
-    // Fade effect for content update
     tableBody.style.opacity = '0';
     setTimeout(() => {
-        tableBody.innerHTML = filteredData.length > 0 ? html : '<tr><td colspan="8" class="text-center py-12 text-muted-foreground uppercase text-[10px] tracking-widest font-bold">No Data Found</td></tr>';
+        tableBody.innerHTML = groupedRows.length > 0 ? html : '<tr><td colspan="12" class="text-center py-12 text-muted-foreground uppercase text-[10px] tracking-widest font-bold">No Data Found</td></tr>';
         tableBody.style.opacity = '1';
-        initTableHover(); // Re-initialize hover listeners
+        initTableHover();
     }, 50);
 
     renderChart(filteredData);
