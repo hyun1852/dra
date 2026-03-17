@@ -81,13 +81,13 @@ function renderDashboard() {
     const specSet = new Set(filteredData.map(d => d.spec));
     const totalCost = filteredData.reduce((sum, d) => sum + d.moldCost, 0);
 
-    // Update numbers
-    totalDomainsEl.textContent = domainSet.size.toLocaleString();
-    totalSystemsEl.textContent = systemSet.size.toLocaleString();
-    totalModularsEl.textContent = modularSet.size.toLocaleString();
-    totalPartsEl.textContent = filteredData.length.toLocaleString();
-    totalSpecsEl.textContent = specSet.size.toLocaleString();
-    totalCostEl.textContent = totalCost.toLocaleString() + ' 억';
+    // Animate numbers
+    animateNumber(totalDomainsEl, domainSet.size);
+    animateNumber(totalSystemsEl, systemSet.size);
+    animateNumber(totalModularsEl, modularSet.size);
+    animateNumber(totalPartsEl, filteredData.length);
+    animateNumber(totalSpecsEl, specSet.size);
+    animateNumber(totalCostEl, totalCost, true);
 
     const rowspans = calculateRowspans(filteredData);
     let html = '';
@@ -106,9 +106,34 @@ function renderDashboard() {
         html += '</tr>';
     });
 
-    tableBody.innerHTML = filteredData.length > 0 ? html : '<tr><td colspan="8" class="text-center py-12 text-muted-foreground uppercase text-[10px] tracking-widest font-bold">No Data Found</td></tr>';
+    // Fade effect for content update
+    tableBody.style.opacity = '0';
+    setTimeout(() => {
+        tableBody.innerHTML = filteredData.length > 0 ? html : '<tr><td colspan="8" class="text-center py-12 text-muted-foreground uppercase text-[10px] tracking-widest font-bold">No Data Found</td></tr>';
+        tableBody.style.opacity = '1';
+    }, 50);
 
     renderChart(filteredData);
+}
+
+function animateNumber(el, target, isCurrency = false) {
+    const start = parseInt(el.textContent.replace(/[^0-9]/g, '')) || 0;
+    const duration = 800;
+    const startTime = performance.now();
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOutQuad = progress * (2 - progress);
+        const current = Math.floor(start + (target - start) * easeOutQuad);
+        
+        el.textContent = isCurrency ? current.toLocaleString() + ' 억' : current.toLocaleString();
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    requestAnimationFrame(update);
 }
 
 function calculateRowspans(data) {
