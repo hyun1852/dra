@@ -94,7 +94,11 @@
         <main id="dashboard-main" class="container mx-auto px-4 py-12 relative z-10">
             <!-- Filter Section (Grayscale) -->
             <div class="mb-12 rounded-xl border border-border bg-background/40 p-6 backdrop-blur-sm shadow-md">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold uppercase tracking-tighter text-muted-foreground">도메인</label>
+                        <select id="domain-filter" class="w-full bg-background border border-border rounded px-3 py-2 text-sm focus:ring-1 focus:ring-foreground outline-none transition-all"></select>
+                    </div>
                     <div class="space-y-2">
                         <label class="text-xs font-bold uppercase tracking-tighter text-muted-foreground">시스템</label>
                         <select id="system-filter" class="w-full bg-background border border-border rounded px-3 py-2 text-sm focus:ring-1 focus:ring-foreground outline-none transition-all"></select>

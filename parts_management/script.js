@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderDashboard();
 
     // Event Listeners
+    document.getElementById('domain-filter').addEventListener('change', handleFilter);
     document.getElementById('system-filter').addEventListener('change', handleFilter);
     document.getElementById('modular-filter').addEventListener('change', handleFilter);
     document.getElementById('part-filter').addEventListener('change', handleFilter);
@@ -17,10 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initFilters() {
+    const domains = [...new Set(partsData.map(d => d.domain))].sort();
     const systems = [...new Set(partsData.map(d => d.system))].sort();
     const modulars = [...new Set(partsData.map(d => d.modularSystem))].sort();
     const parts = [...new Set(partsData.map(d => d.part))].sort();
 
+    fillSelect('domain-filter', domains);
     fillSelect('system-filter', systems);
     fillSelect('modular-filter', modulars);
     fillSelect('part-filter', parts);
@@ -29,6 +32,7 @@ function initFilters() {
 function fillSelect(id, items) {
     const select = document.getElementById(id);
     let defaultText = '전체 시스템';
+    if (id === 'domain-filter') defaultText = '전체 도메인';
     if (id === 'modular-filter') defaultText = '전체 모듈러';
     if (id === 'part-filter') defaultText = '전체 부품';
     
@@ -43,6 +47,7 @@ function fillSelect(id, items) {
 }
 
 function handleFilter() {
+    const domain = document.getElementById('domain-filter').value;
     const system = document.getElementById('system-filter').value;
     const modular = document.getElementById('modular-filter').value;
     const partName = document.getElementById('part-filter').value;
@@ -50,11 +55,22 @@ function handleFilter() {
     const search = document.getElementById('search-input').value.toLowerCase();
 
     filteredData = partsData.filter(d => {
+        const matchesDomain = !domain || d.domain === domain;
         const matchesSystem = !system || d.system === system;
         const matchesModular = !modular || d.modularSystem === modular;
         const matchesPart = !partName || d.part === partName;
-        const matchesSearch = !search || d.targetVehicle.toLowerCase().includes(search) || d.sharedVehicle.toLowerCase().includes(search);
-        return matchesSystem && matchesModular && matchesPart && matchesSearch;
+        
+        // Global Search: Search across all relevant text fields
+        const matchesSearch = !search || 
+            d.domain.toLowerCase().includes(search) ||
+            d.system.toLowerCase().includes(search) ||
+            d.modularSystem.toLowerCase().includes(search) ||
+            d.part.toLowerCase().includes(search) ||
+            d.spec.toLowerCase().includes(search) ||
+            d.targetVehicle.toLowerCase().includes(search) ||
+            d.sharedVehicle.toLowerCase().includes(search);
+
+        return matchesDomain && matchesSystem && matchesModular && matchesPart && matchesSearch;
     });
 
     if (sort === 'asc') {
