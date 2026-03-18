@@ -7,6 +7,11 @@ let chartSortStates = {
     vehicle: 'default'
 };
 
+let chartScaleModes = {
+    system: 'fixed',
+    vehicle: 'fixed'
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     initFilters();
     initTheme();
@@ -21,15 +26,33 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('search-input').addEventListener('input', handleFilter);
     document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
     
-    // Chart Sort Buttons
+    // System Chart Controls
     document.getElementById('sort-system-chart').addEventListener('click', () => {
-        chartSortStates.system = chartSortStates.system === 'default' ? 'cost' : 'default';
-        document.getElementById('sort-system-chart').textContent = chartSortStates.system === 'default' ? '기본순' : '금액순';
+        const states = ['default', 'cost', 'rate'];
+        const next = states[(states.indexOf(chartSortStates.system) + 1) % states.length];
+        chartSortStates.system = next;
+        const labels = { default: '기본순', cost: '금액순', rate: '비율순' };
+        document.getElementById('sort-system-chart').textContent = labels[next];
         renderSystemSharingChart(filteredData);
     });
+    document.getElementById('toggle-system-scale').addEventListener('click', () => {
+        chartScaleModes.system = chartScaleModes.system === 'fixed' ? 'actual' : 'fixed';
+        document.getElementById('toggle-system-scale').textContent = chartScaleModes.system === 'fixed' ? 'Actual' : 'Fixed';
+        renderSystemSharingChart(filteredData);
+    });
+
+    // Vehicle Chart Controls
     document.getElementById('sort-vehicle-chart').addEventListener('click', () => {
-        chartSortStates.vehicle = chartSortStates.vehicle === 'default' ? 'cost' : 'default';
-        document.getElementById('sort-vehicle-chart').textContent = chartSortStates.vehicle === 'default' ? '기본순' : '금액순';
+        const states = ['default', 'cost', 'rate'];
+        const next = states[(states.indexOf(chartSortStates.vehicle) + 1) % states.length];
+        chartSortStates.vehicle = next;
+        const labels = { default: '기본순', cost: '금액순', rate: '비율순' };
+        document.getElementById('sort-vehicle-chart').textContent = labels[next];
+        renderVehicleSharingChart(filteredData);
+    });
+    document.getElementById('toggle-vehicle-scale').addEventListener('click', () => {
+        chartScaleModes.vehicle = chartScaleModes.vehicle === 'fixed' ? 'actual' : 'fixed';
+        document.getElementById('toggle-vehicle-scale').textContent = chartScaleModes.vehicle === 'fixed' ? 'Actual' : 'Fixed';
         renderVehicleSharingChart(filteredData);
     });
 });
@@ -80,13 +103,11 @@ function handleFilter(e) {
     const sort = sortEl.value;
     const search = searchEl.value.toLowerCase();
 
-    // 1. Update working data based on all filters
     filteredData = partsData.filter(d => {
         const matchesDomain = !domain || d.domain === domain;
         const matchesSystem = !system || d.system === system;
         const matchesModular = !modular || d.modularSystem === modular;
         const matchesPart = !partName || d.part === partName;
-        
         const matchesSearch = !search || 
             (d.domain && d.domain.toLowerCase().includes(search)) ||
             (d.system && d.system.toLowerCase().includes(search)) ||
@@ -99,9 +120,7 @@ function handleFilter(e) {
         return matchesDomain && matchesSystem && matchesModular && matchesPart && matchesSearch;
     });
 
-    // 2. Hierarchical UI Update: Cascading options
     const changedId = e ? e.target.id : null;
-    
     if (changedId === 'domain-filter' || !changedId) {
         const domainFiltered = domain ? partsData.filter(d => d.domain === domain) : partsData;
         updateFilterOptions('system-filter', 'system', domainFiltered);
@@ -116,11 +135,8 @@ function handleFilter(e) {
         updateFilterOptions('part-filter', 'part', modularFiltered);
     }
 
-    if (sort === 'asc') {
-        filteredData.sort((a, b) => a.moldCost - b.moldCost);
-    } else if (sort === 'desc') {
-        filteredData.sort((a, b) => b.moldCost - a.moldCost);
-    }
+    if (sort === 'asc') filteredData.sort((a, b) => a.moldCost - b.moldCost);
+    else if (sort === 'desc') filteredData.sort((a, b) => b.moldCost - a.moldCost);
 
     renderDashboard();
 }
@@ -129,12 +145,10 @@ function updateFilterOptions(id, key, data) {
     const select = document.getElementById(id);
     const currentVal = select.value;
     const items = [...new Set(data.map(d => d[key]))].sort();
-    
     let defaultText = '전체 시스템';
     if (id === 'domain-filter') defaultText = '전체 도메인';
     if (id === 'modular-filter') defaultText = '전체 모듈러';
     if (id === 'part-filter') defaultText = '전체 부품';
-    
     select.innerHTML = `<option value="">${defaultText}</option>`;
     items.forEach(item => {
         const opt = document.createElement('option');
@@ -174,7 +188,8 @@ function renderDashboard() {
     animateNumber(costAvoidanceEl, costAvoidance);
     sharingRateEl.textContent = `${Math.round(sharingRate)}%`;
 
-    // Render New Horizontal Bar Charts
+    renderChart(filteredData);
+    renderVerticalSharingChart(actualSpentCost, potentialTotalCost);
     renderSystemSharingChart(filteredData);
     renderVehicleSharingChart(filteredData);
 
@@ -189,9 +204,7 @@ function renderDashboard() {
             groupedRows.push(existing);
         }
         existing.vehicles[item.targetVehicle] = item.sharedVehicle === "" ? "신규" : item.sharedVehicle;
-        if (item.sharedVehicle === "") {
-            existing.totalInvestment += item.moldCost;
-        }
+        if (item.sharedVehicle === "") existing.totalInvestment += item.moldCost;
     });
 
     const rowspans = calculateRowspans(groupedRows);
@@ -203,22 +216,16 @@ function renderDashboard() {
         const levels = ['domain', 'system', 'modularSystem', 'part'];
         let rowDataAttrs = '';
         levels.forEach(level => {
-            if (rowspans[level][index]) {
-                lastCellIds[level] = `cell-${level}-${groupCounters[level]++}`;
-            }
+            if (rowspans[level][index]) lastCellIds[level] = `cell-${level}-${groupCounters[level]++}`;
             rowDataAttrs += ` data-${level}-link="${lastCellIds[level]}"`;
         });
-
         html += `<tr class="transition-colors group-row" ${rowDataAttrs}>`;
         levels.forEach(level => {
-            if (rowspans[level][index]) {
-                html += `<td id="${lastCellIds[level]}" rowspan="${rowspans[level][index]}" class="px-6 py-4 font-bold text-foreground underline decoration-border/20 transition-colors">${item[level]}</td>`;
-            }
+            if (rowspans[level][index]) html += `<td id="${lastCellIds[level]}" rowspan="${rowspans[level][index]}" class="px-6 py-4 font-bold text-foreground underline decoration-border/20 transition-colors">${item[level]}</td>`;
         });
         html += `<td class="px-6 py-4 text-muted-foreground">${item.spec}</td>`;
         html += `<td class="px-6 py-4 font-bold text-muted-foreground text-right tabular-nums italic border-r border-border/50">${item.moldCost.toLocaleString()}</td>`;
         html += `<td class="px-6 py-4 font-black text-foreground text-right tabular-nums border-r border-border/50">${item.totalInvestment.toLocaleString()}</td>`;
-        
         vehicleList.forEach(vCode => {
             const status = item.vehicles[vCode] || "-";
             const statusClass = status === "신규" ? "text-foreground font-black" : "text-muted-foreground";
@@ -234,9 +241,27 @@ function renderDashboard() {
         tableBody.style.opacity = '1';
         initTableHover();
     }, 50);
+}
 
-    renderChart(filteredData);
-    renderSharingChart(actualSpentCost, potentialTotalCost);
+function renderVerticalSharingChart(actual, potential) {
+    const container = document.getElementById('vertical-sharing-container');
+    const saved = potential - actual;
+    const actualHeight = potential > 0 ? (actual / potential) * 100 : 0;
+    const savedHeight = potential > 0 ? (saved / potential) * 100 : 0;
+    container.innerHTML = `
+        <div class="relative w-8 h-full bg-foreground/5 rounded-sm overflow-hidden flex flex-col-reverse border border-border/50">
+            <div class="w-full bg-foreground transition-all duration-700 flex items-center justify-center overflow-hidden" style="height: ${actualHeight}%">
+                ${actualHeight > 10 ? `<span class="text-[8px] font-black text-background vertical-text transform rotate-180">${actual}</span>` : ''}
+            </div>
+            <div class="w-full bg-emerald-500 transition-all duration-700 flex items-center justify-center overflow-hidden" style="height: ${savedHeight}%">
+                ${savedHeight > 10 ? `<span class="text-[8px] font-black text-white vertical-text transform rotate-180">${saved}</span>` : ''}
+            </div>
+        </div>
+        <div class="mt-2 text-center shrink-0">
+            <span class="text-[9px] font-black block text-foreground">${potential}</span>
+            <span class="text-[7px] uppercase text-muted-foreground font-bold tracking-tighter">TOTAL</span>
+        </div>
+    `;
 }
 
 function renderSystemSharingChart(data) {
@@ -247,20 +272,17 @@ function renderSystemSharingChart(data) {
         stats[d.system].potential += d.moldCost;
         if (d.sharedVehicle === "") stats[d.system].actual += d.moldCost;
     });
-
-    let systems = Object.keys(stats).map(s => ({
+    let items = Object.keys(stats).map(s => ({
         name: s,
         ...stats[s],
-        saved: stats[s].potential - stats[s].actual
+        saved: stats[s].potential - stats[s].actual,
+        rate: stats[s].potential > 0 ? ((stats[s].potential - stats[s].actual) / stats[s].potential) * 100 : 0
     }));
-
-    if (chartSortStates.system === 'cost') {
-        systems.sort((a, b) => b.potential - a.potential);
-    } else {
-        systems.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    renderHorizontalBars(container, systems);
+    if (chartSortStates.system === 'cost') items.sort((a, b) => b.potential - a.potential);
+    else if (chartSortStates.system === 'rate') items.sort((a, b) => b.rate - a.rate);
+    else items.sort((a, b) => a.name.localeCompare(b.name));
+    const maxPotential = Math.max(...items.map(i => i.potential), 1);
+    renderHorizontalBars(container, items, maxPotential, chartScaleModes.system);
 }
 
 function renderVehicleSharingChart(data) {
@@ -271,43 +293,42 @@ function renderVehicleSharingChart(data) {
         stats[d.targetVehicle].potential += d.moldCost;
         if (d.sharedVehicle === "") stats[d.targetVehicle].actual += d.moldCost;
     });
-
-    let vehicles = Object.keys(stats).map(v => ({
+    let items = Object.keys(stats).map(v => ({
         name: v,
         ...stats[v],
-        saved: stats[v].potential - stats[v].actual
+        saved: stats[v].potential - stats[v].actual,
+        rate: stats[v].potential > 0 ? ((stats[v].potential - stats[v].actual) / stats[v].potential) * 100 : 0
     }));
-
-    if (chartSortStates.vehicle === 'cost') {
-        vehicles.sort((a, b) => b.potential - a.potential);
-    } else {
-        vehicles.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    renderHorizontalBars(container, vehicles);
+    if (chartSortStates.vehicle === 'cost') items.sort((a, b) => b.potential - a.potential);
+    else if (chartSortStates.vehicle === 'rate') items.sort((a, b) => b.rate - a.rate);
+    else items.sort((a, b) => a.name.localeCompare(b.name));
+    const maxPotential = Math.max(...items.map(i => i.potential), 1);
+    renderHorizontalBars(container, items, maxPotential, chartScaleModes.vehicle);
 }
 
-function renderHorizontalBars(container, items) {
+function renderHorizontalBars(container, items, maxPotential, scaleMode) {
     if (items.length === 0) {
-        container.innerHTML = '<div class="text-center text-[10px] py-12 text-muted-foreground uppercase font-bold tracking-widest">No Data</div>';
+        container.innerHTML = '<div class="text-center text-[8px] py-12 text-muted-foreground uppercase font-bold tracking-widest">No Data</div>';
         return;
     }
-
     container.innerHTML = items.map(item => {
         const actualWidth = item.potential > 0 ? (item.actual / item.potential) * 100 : 0;
         const savedWidth = item.potential > 0 ? (item.saved / item.potential) * 100 : 0;
+        const containerWidth = scaleMode === 'actual' ? (item.potential / maxPotential) * 100 : 100;
         return `
-            <div class="space-y-1.5 group">
+            <div class="space-y-1 group">
                 <div class="flex justify-between items-end">
-                    <span class="text-[10px] font-black text-foreground uppercase tracking-tighter">${item.name}</span>
-                    <span class="text-[9px] font-bold text-muted-foreground tabular-nums">기준 ${item.potential.toLocaleString()}억</span>
+                    <span class="text-[9px] font-black text-foreground uppercase tracking-tighter truncate w-24">${item.name}</span>
+                    <span class="text-[8px] font-bold text-muted-foreground tabular-nums">${item.potential.toLocaleString()}억 (${Math.round(item.rate)}%)</span>
                 </div>
-                <div class="relative w-full h-8 bg-foreground/5 rounded-sm overflow-hidden flex border border-border/50 group-hover:border-foreground/20 transition-colors">
-                    <div class="h-full bg-foreground flex items-center justify-center transition-all duration-700" style="width: ${actualWidth}%">
-                        ${actualWidth > 15 ? `<span class="text-[9px] font-black text-background">실제 ${item.actual}억</span>` : ''}
-                    </div>
-                    <div class="h-full bg-emerald-500/80 flex items-center justify-center transition-all duration-700" style="width: ${savedWidth}%">
-                        ${savedWidth > 15 ? `<span class="text-[9px] font-black text-white">절감 ${item.saved}억</span>` : ''}
+                <div class="relative h-6 flex transition-all duration-500" style="width: ${containerWidth}%">
+                    <div class="relative flex-1 bg-foreground/5 rounded-sm overflow-hidden flex border border-border/50 group-hover:border-foreground/20 transition-colors">
+                        <div class="h-full bg-foreground flex items-center justify-center transition-all duration-700" style="width: ${actualWidth}%">
+                            ${actualWidth > 20 ? `<span class="text-[8px] font-black text-background">${item.actual}</span>` : ''}
+                        </div>
+                        <div class="h-full bg-emerald-500 flex items-center justify-center transition-all duration-700" style="width: ${savedWidth}%">
+                            ${savedWidth > 20 ? `<span class="text-[8px] font-black text-white">${item.saved}</span>` : ''}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -315,38 +336,9 @@ function renderHorizontalBars(container, items) {
     }).join('');
 }
 
-function renderSharingChart(actual, potential) {
-    const actualBar = document.getElementById('actual-spent-bar');
-    const savedBar = document.getElementById('saved-cost-bar');
-    const actualText = document.getElementById('actual-cost-val');
-    const savedText = document.getElementById('saved-cost-val');
-    const potentialText = document.getElementById('potential-cost-val');
-    const savedSummaryText = document.getElementById('saved-cost-summary');
-    const ratePercentText = document.getElementById('sharing-rate-percent');
-
-    const saved = potential - actual;
-    const rate = potential > 0 ? (saved / potential) * 100 : 0;
-    
-    // For vertical bars, we calculate height as percentage of potential
-    const actualHeight = potential > 0 ? (actual / potential) * 100 : 0;
-    const savedHeight = potential > 0 ? (saved / potential) * 100 : 0;
-
-    if (actualBar && savedBar) {
-        actualBar.style.height = `${actualHeight}%`;
-        savedBar.style.height = `${savedHeight}%`;
-        
-        actualText.textContent = `${actual.toLocaleString()}억`;
-        savedText.textContent = `${saved.toLocaleString()}억`;
-        potentialText.textContent = `${potential.toLocaleString()}억`;
-        savedSummaryText.textContent = `${saved.toLocaleString()}억`;
-        ratePercentText.textContent = `${Math.round(rate)}%`;
-    }
-}
-
 function initTableHover() {
     const tableBody = document.getElementById('table-body');
     const levels = ['domain', 'system', 'modularSystem', 'part'];
-
     tableBody.addEventListener('mouseover', (e) => {
         const cell = e.target.closest('td');
         if (!cell) return;
@@ -361,11 +353,8 @@ function initTableHover() {
             }
         });
         const totalCells = allCells.length;
-        allCells.forEach((c, idx) => {
-            if (idx < totalCells - 6) c.classList.add('cell-highlight');
-        });
+        allCells.forEach((c, idx) => { if (idx < totalCells - 6) c.classList.add('cell-highlight'); });
     });
-
     tableBody.addEventListener('mouseout', (e) => {
         const tr = e.target.closest('tr');
         if (!tr) return;
@@ -444,20 +433,17 @@ function renderChart(data) {
                      class="transition-all duration-300 hover:stroke-foreground"
                      style="stroke-linecap: butt;"></circle>`;
         legendHtml += `
-            <div class="flex items-center justify-between text-[10px] uppercase font-bold tracking-tight group cursor-default">
-                <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full border border-border" style="background:${color}"></span>
-                    <span class="text-muted-foreground group-hover:text-foreground transition-colors">${system}</span>
+            <div class="flex items-center justify-between text-[8px] uppercase font-bold tracking-tight group cursor-default">
+                <div class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full border border-border" style="background:${color}"></span>
+                    <span class="text-muted-foreground group-hover:text-foreground transition-colors truncate w-16">${system}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-foreground">${Math.round(percent)}%</span>
-                    <span class="text-muted-foreground">(${cost}억)</span>
-                </div>
+                <span class="text-foreground">${Math.round(percent)}%</span>
             </div>`;
         cumulativePercent += percent;
     });
     chart.innerHTML = total > 0 ? svgHtml : '';
-    legend.innerHTML = total > 0 ? legendHtml : '<div class="text-center text-muted-foreground py-4 text-[10px] uppercase font-bold tracking-widest">No Data</div>';
+    legend.innerHTML = total > 0 ? legendHtml : '<div class="text-center text-muted-foreground py-4 text-[8px] uppercase font-bold tracking-widest">No Data</div>';
 }
 
 function initTheme() {

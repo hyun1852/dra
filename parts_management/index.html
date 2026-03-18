@@ -79,9 +79,9 @@
                         <span class="text-muted-foreground text-[10px] uppercase tracking-wider">총 사양 수</span>
                         <span id="total-specs" class="text-2xl font-bold text-foreground">0</span>
                     </div>
-                    <div class="flex flex-col items-center justify-center space-y-2 p-4 bg-foreground/5 rounded-lg border border-border/50">
-                        <span class="text-muted-foreground text-[10px] uppercase tracking-wider font-bold">기준투자비(억)</span>
-                        <span id="potential-total-cost" class="text-2xl font-bold text-muted-foreground">0</span>
+                    <div class="flex flex-col items-center justify-center space-y-2 p-4 bg-foreground/10 rounded-lg border border-foreground/20">
+                        <span class="text-foreground text-[10px] uppercase tracking-wider font-bold">기준투자비(억)</span>
+                        <span id="potential-total-cost" class="text-2xl font-bold text-foreground">0</span>
                     </div>
                     <div class="flex flex-col items-center justify-center space-y-2 p-4 bg-foreground/10 rounded-lg border border-foreground/20">
                         <span class="text-foreground text-[10px] uppercase tracking-wider font-bold">실제투자비(억)</span>
@@ -91,9 +91,9 @@
                         <span class="text-emerald-500 text-[10px] uppercase tracking-wider font-bold">절감투자비(억)</span>
                         <span id="cost-avoidance" class="text-2xl font-bold text-emerald-500">0</span>
                     </div>
-                    <div class="flex flex-col items-center justify-center space-y-2 p-4 bg-foreground/10 rounded-lg border border-foreground/20">
-                        <span class="text-foreground text-[10px] uppercase tracking-wider font-bold">공용화율</span>
-                        <span id="sharing-rate" class="text-2xl font-bold text-foreground">0%</span>
+                    <div class="flex flex-col items-center justify-center space-y-2 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/30">
+                        <span class="text-emerald-500 text-[10px] uppercase tracking-wider font-bold">공용화율</span>
+                        <span id="sharing-rate" class="text-2xl font-bold text-emerald-500">0%</span>
                     </div>
                 </div>
             </div>
@@ -134,90 +134,59 @@
                 </div>
             </div>
 
-            <!-- Analysis Section: Progress Bar Charts -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                <!-- System Sharing Chart -->
-                <div class="rounded-xl border border-border bg-background/40 p-8 backdrop-blur-sm shadow-lg">
-                    <div class="flex items-center justify-between mb-8 border-b border-border pb-4">
-                        <h3 class="text-sm font-bold uppercase tracking-widest text-foreground">시스템별 공용화 현황</h3>
-                        <button id="sort-system-chart" class="text-[10px] font-black px-3 py-1 rounded border border-border hover:bg-foreground/10 transition-all uppercase tracking-tighter">기본순</button>
-                    </div>
-                    <div id="system-bar-chart" class="space-y-6">
-                        <!-- Bars will be rendered here -->
+            <!-- Analysis Section: Charts in 1.5 : 0.5 : 4 : 4 Ratio -->
+            <div class="flex flex-col lg:flex-row gap-4 mb-12 h-auto lg:h-[400px]">
+                <!-- 1. System Pie Chart (1.5) -->
+                <div class="lg:flex-[1.5] rounded-xl border border-border bg-background/40 p-4 backdrop-blur-sm shadow-lg flex flex-col overflow-hidden min-w-0">
+                    <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-foreground text-center border-b border-border pb-2">시스템 투자비 비중</h3>
+                    <div class="flex-1 flex flex-col items-center justify-center gap-4 overflow-hidden">
+                        <div class="relative w-24 h-24 shrink-0">
+                            <svg id="mold-chart" class="w-full h-full transform -rotate-90" viewBox="0 0 42 42"></svg>
+                        </div>
+                        <div id="chart-legend" class="w-full space-y-1 overflow-y-auto pr-1 text-[8px] scrollbar-thin scrollbar-thumb-border"></div>
                     </div>
                 </div>
 
-                <!-- Vehicle Sharing Chart -->
-                <div class="rounded-xl border border-border bg-background/40 p-8 backdrop-blur-sm shadow-lg">
-                    <div class="flex items-center justify-between mb-8 border-b border-border pb-4">
-                        <h3 class="text-sm font-bold uppercase tracking-widest text-foreground">차종별 공용화 현황</h3>
-                        <button id="sort-vehicle-chart" class="text-[10px] font-black px-3 py-1 rounded border border-border hover:bg-foreground/10 transition-all uppercase tracking-tighter">기본순</button>
-                    </div>
-                    <div id="vehicle-bar-chart" class="space-y-6">
-                        <!-- Bars will be rendered here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Charts Section (Pie & Vertical Bar) -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                <!-- System Pie Chart -->
-                <div class="rounded-xl border border-border bg-background/40 p-8 backdrop-blur-sm shadow-lg">
-                    <h3 class="text-sm font-bold uppercase tracking-widest mb-8 text-foreground text-center border-b border-border pb-4">시스템별 금형투자비 비중</h3>
-                    <div id="chart-area" class="flex flex-col md:flex-row items-center justify-around gap-8">
-                        <div class="relative w-48 h-48 shrink-0">
-                            <svg id="mold-chart" class="w-full h-full transform -rotate-90" viewBox="0 0 42 42">
-                                <!-- Pie segments -->
-                            </svg>
-                        </div>
-                        <div id="chart-legend" class="flex-1 space-y-3 w-full"></div>
+                <!-- 2. Overall Vertical Bar (0.5) -->
+                <div class="lg:flex-[0.5] rounded-xl border border-border bg-background/40 p-4 backdrop-blur-sm shadow-lg flex flex-col overflow-hidden min-w-0">
+                    <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-foreground text-center border-b border-border pb-2">공용화 현황</h3>
+                    <div id="vertical-sharing-container" class="flex-1 flex flex-col items-center justify-end pb-2 overflow-hidden">
+                        <!-- Vertical bar will be rendered here -->
                     </div>
                 </div>
 
-                <!-- Sharing Rate Vertical Bar Chart -->
-                <div class="rounded-xl border border-border bg-background/40 p-8 backdrop-blur-sm shadow-lg flex flex-col">
-                    <h3 class="text-sm font-bold uppercase tracking-widest mb-8 text-foreground text-center border-b border-border pb-4">금형공용화 현황 (투자비 절감)</h3>
-                    <div class="flex-1 flex flex-row items-end justify-center gap-12 pt-4 pb-2">
-                        <!-- Potential Total Bar -->
-                        <div class="flex flex-col items-center gap-4 h-full w-24">
-                            <div class="flex-1 w-full bg-secondary/20 border border-border rounded-t-lg relative flex flex-col justify-end overflow-hidden shadow-inner">
-                                <div class="h-full w-full bg-muted-foreground/10"></div>
-                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                    <span class="text-[10px] font-bold text-muted-foreground vertical-text transform -rotate-90 whitespace-nowrap">POTENTIAL</span>
-                                </div>
-                            </div>
-                            <div class="text-center space-y-1">
-                                <span id="potential-cost-val" class="text-xs font-bold block">0억</span>
-                                <span class="text-[8px] uppercase text-muted-foreground font-black tracking-tighter">잠재 총액</span>
-                            </div>
-                        </div>
-
-                        <!-- Actual Spent Bar -->
-                        <div class="flex flex-col items-center gap-4 h-full w-24">
-                            <div class="flex-1 w-full bg-secondary/20 border border-border rounded-t-lg relative flex flex-col justify-end overflow-hidden shadow-inner">
-                                <div id="actual-spent-bar" class="w-full bg-foreground transition-all duration-1000 ease-out flex items-start justify-center pt-2" style="height: 0%">
-                                    <span id="actual-cost-val" class="text-[10px] font-black text-background">0억</span>
-                                </div>
-                            </div>
-                            <div class="text-center space-y-1">
-                                <span id="sharing-rate-percent" class="text-sm font-black block text-primary">0%</span>
-                                <span class="text-[8px] uppercase text-foreground font-black tracking-tighter">실제 지출</span>
-                            </div>
-                        </div>
-
-                        <!-- Saved Cost Bar -->
-                        <div class="flex flex-col items-center gap-4 h-full w-24">
-                            <div class="flex-1 w-full bg-secondary/20 border border-border rounded-t-lg relative flex flex-col justify-end overflow-hidden shadow-inner">
-                                <div id="saved-cost-bar" class="w-full bg-secondary transition-all duration-1000 ease-out flex items-start justify-center pt-2" style="height: 0%">
-                                    <span id="saved-cost-val" class="text-[10px] font-bold text-foreground">0억</span>
-                                </div>
-                            </div>
-                            <div class="text-center space-y-1">
-                                <span id="saved-cost-summary" class="text-xs font-bold block">0억</span>
-                                <span class="text-[8px] uppercase text-muted-foreground font-black tracking-tighter">절감 총액</span>
-                            </div>
+                <!-- 3. System Horizontal Bar (4.0) -->
+                <div class="lg:flex-[4] rounded-xl border border-border bg-background/40 p-5 backdrop-blur-sm shadow-lg flex flex-col overflow-hidden min-w-0">
+                    <div class="flex items-center justify-between mb-3 border-b border-border pb-2 shrink-0">
+                        <h3 class="text-[10px] font-bold uppercase tracking-widest text-foreground">시스템별 공용화 현황</h3>
+                        <div class="flex gap-2">
+                            <button id="toggle-system-scale" class="text-[8px] font-black px-1.5 py-0.5 rounded border border-border hover:bg-foreground/10 transition-all uppercase">Actual</button>
+                            <button id="sort-system-chart" class="text-[8px] font-black px-1.5 py-0.5 rounded border border-border hover:bg-foreground/10 transition-all uppercase">기본순</button>
                         </div>
                     </div>
+                    <!-- Legend -->
+                    <div class="flex justify-end gap-3 mb-2 text-[8px] font-bold uppercase tracking-tighter shrink-0">
+                        <div class="flex items-center gap-1"><div class="w-2 h-2 bg-foreground rounded-full"></div>실제투자비</div>
+                        <div class="flex items-center gap-1"><div class="w-2 h-2 bg-emerald-500 rounded-full"></div>절감투자비</div>
+                    </div>
+                    <div id="system-bar-chart" class="flex-1 space-y-3 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-border"></div>
+                </div>
+
+                <!-- 4. Vehicle Horizontal Bar (4.0) -->
+                <div class="lg:flex-[4] rounded-xl border border-border bg-background/40 p-5 backdrop-blur-sm shadow-lg flex flex-col overflow-hidden min-w-0">
+                    <div class="flex items-center justify-between mb-3 border-b border-border pb-2 shrink-0">
+                        <h3 class="text-[10px] font-bold uppercase tracking-widest text-foreground">차종별 공용화 현황</h3>
+                        <div class="flex gap-2">
+                            <button id="toggle-vehicle-scale" class="text-[8px] font-black px-1.5 py-0.5 rounded border border-border hover:bg-foreground/10 transition-all uppercase">Actual</button>
+                            <button id="sort-vehicle-chart" class="text-[8px] font-black px-1.5 py-0.5 rounded border border-border hover:bg-foreground/10 transition-all uppercase">기본순</button>
+                        </div>
+                    </div>
+                    <!-- Legend -->
+                    <div class="flex justify-end gap-3 mb-2 text-[8px] font-bold uppercase tracking-tighter shrink-0">
+                        <div class="flex items-center gap-1"><div class="w-2 h-2 bg-foreground rounded-full"></div>실제투자비</div>
+                        <div class="flex items-center gap-1"><div class="w-2 h-2 bg-emerald-500 rounded-full"></div>절감투자비</div>
+                    </div>
+                    <div id="vehicle-bar-chart" class="flex-1 space-y-3 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-border"></div>
                 </div>
             </div>
 

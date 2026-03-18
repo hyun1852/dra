@@ -89,18 +89,31 @@ thead th {
     overflow: visible !important;
 }
 
-/* Vertical Text Utility */
+/* Scrollbar Styling */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 10px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground) / 0.2);
+}
+
+/* Vertical Text refinement */
 .vertical-text {
     writing-mode: vertical-rl;
     text-orientation: mixed;
+    white-space: nowrap;
 }
 
-/* Sharing Matrix Cell */
-#sharing-matrix .grid > div {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 40px;
+/* Ensure no overflow issues in the chart row */
+.lg\:flex-\[1\.5\], .lg\:flex-\[0\.5\], .lg\:flex-\[4\] {
+    min-width: 0;
 }
 
 /* Animations and Transitions */
