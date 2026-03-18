@@ -2,6 +2,11 @@ import partsData from './data.js';
 
 let filteredData = [...partsData];
 
+let chartSortStates = {
+    system: 'default',
+    vehicle: 'default'
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     initFilters();
     initTheme();
@@ -15,6 +20,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('sort-order').addEventListener('change', handleFilter);
     document.getElementById('search-input').addEventListener('input', handleFilter);
     document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+    
+    // Chart Sort Buttons
+    document.getElementById('sort-system-chart').addEventListener('click', () => {
+        chartSortStates.system = chartSortStates.system === 'default' ? 'cost' : 'default';
+        document.getElementById('sort-system-chart').textContent = chartSortStates.system === 'default' ? '기본순' : '금액순';
+        renderSystemSharingChart(filteredData);
+    });
+    document.getElementById('sort-vehicle-chart').addEventListener('click', () => {
+        chartSortStates.vehicle = chartSortStates.vehicle === 'default' ? 'cost' : 'default';
+        document.getElementById('sort-vehicle-chart').textContent = chartSortStates.vehicle === 'default' ? '기본순' : '금액순';
+        renderVehicleSharingChart(filteredData);
+    });
 });
 
 function initFilters() {
@@ -157,9 +174,9 @@ function renderDashboard() {
     animateNumber(costAvoidanceEl, costAvoidance);
     sharingRateEl.textContent = `${Math.round(sharingRate)}%`;
 
-    // Render Matrix & Lists
-    renderSharingMatrix(filteredData);
-    renderContributionLists(filteredData);
+    // Render New Horizontal Bar Charts
+    renderSystemSharingChart(filteredData);
+    renderVehicleSharingChart(filteredData);
 
     const groupedRows = [];
     const vehicleList = ["NE2", "NV1", "JK2", "JW2", "ME2", "MV2"];
@@ -222,100 +239,80 @@ function renderDashboard() {
     renderSharingChart(actualSpentCost, potentialTotalCost);
 }
 
-function renderSharingMatrix(data) {
-    const container = document.getElementById('sharing-matrix');
-    const borrowers = [...new Set(data.map(d => d.targetVehicle))].sort();
-    const providers = [...new Set(data.filter(d => d.sharedVehicle !== "").map(d => d.sharedVehicle))].sort();
-    
-    if (providers.length === 0) {
-        container.innerHTML = '<div class="text-center py-12 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">No Sharing Data Available</div>';
+function renderSystemSharingChart(data) {
+    const container = document.getElementById('system-bar-chart');
+    const stats = {};
+    data.forEach(d => {
+        if (!stats[d.system]) stats[d.system] = { potential: 0, actual: 0 };
+        stats[d.system].potential += d.moldCost;
+        if (d.sharedVehicle === "") stats[d.system].actual += d.moldCost;
+    });
+
+    let systems = Object.keys(stats).map(s => ({
+        name: s,
+        ...stats[s],
+        saved: stats[s].potential - stats[s].actual
+    }));
+
+    if (chartSortStates.system === 'cost') {
+        systems.sort((a, b) => b.potential - a.potential);
+    } else {
+        systems.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    renderHorizontalBars(container, systems);
+}
+
+function renderVehicleSharingChart(data) {
+    const container = document.getElementById('vehicle-bar-chart');
+    const stats = {};
+    data.forEach(d => {
+        if (!stats[d.targetVehicle]) stats[d.targetVehicle] = { potential: 0, actual: 0 };
+        stats[d.targetVehicle].potential += d.moldCost;
+        if (d.sharedVehicle === "") stats[d.targetVehicle].actual += d.moldCost;
+    });
+
+    let vehicles = Object.keys(stats).map(v => ({
+        name: v,
+        ...stats[v],
+        saved: stats[v].potential - stats[v].actual
+    }));
+
+    if (chartSortStates.vehicle === 'cost') {
+        vehicles.sort((a, b) => b.potential - a.potential);
+    } else {
+        vehicles.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    renderHorizontalBars(container, vehicles);
+}
+
+function renderHorizontalBars(container, items) {
+    if (items.length === 0) {
+        container.innerHTML = '<div class="text-center text-[10px] py-12 text-muted-foreground uppercase font-bold tracking-widest">No Data</div>';
         return;
     }
 
-    const matrixData = {};
-    let maxCost = 0;
-
-    borrowers.forEach(b => {
-        matrixData[b] = {};
-        providers.forEach(p => {
-            const cost = data
-                .filter(d => d.targetVehicle === b && d.sharedVehicle === p)
-                .reduce((sum, d) => sum + d.moldCost, 0);
-            matrixData[b][p] = cost;
-            if (cost > maxCost) maxCost = cost;
-        });
-    });
-
-    let html = `<div class="grid" style="grid-template-columns: 80px repeat(${providers.length}, 1fr);">`;
-    // Header
-    html += `<div class="p-2 border-b border-r border-border flex items-end justify-center text-[8px] font-black text-muted-foreground">Provider →</div>`;
-    providers.forEach(p => {
-        html += `<div class="p-2 border-b border-border text-center text-[10px] font-black text-foreground bg-foreground/5">${p}</div>`;
-    });
-
-    // Rows
-    borrowers.forEach(b => {
-        html += `<div class="p-2 border-r border-border text-center text-[10px] font-black text-foreground bg-foreground/5 flex items-center justify-center">${b}</div>`;
-        providers.forEach(p => {
-            const cost = matrixData[b][p];
-            const opacity = maxCost > 0 ? (cost / maxCost) : 0;
-            const bgStyle = cost > 0 ? `background-color: rgba(16, 185, 129, ${0.1 + opacity * 0.8}); color: ${opacity > 0.5 ? '#fff' : 'inherit'};` : '';
-            html += `<div class="p-2 border-b border-r border-border/20 text-center text-[10px] tabular-nums font-bold transition-all hover:scale-105 hover:z-10 cursor-default" style="${bgStyle}">
-                        ${cost > 0 ? cost : '-'}
-                     </div>`;
-        });
-    });
-    html += `</div>`;
-    container.innerHTML = html;
-}
-
-function renderContributionLists(data) {
-    const efficiencyList = document.getElementById('efficiency-list');
-    const bottleneckList = document.getElementById('bottleneck-list');
-
-    // Calculate per-system stats
-    const systemStats = {};
-    data.forEach(d => {
-        if (!systemStats[d.system]) systemStats[d.system] = { potential: 0, actual: 0 };
-        systemStats[d.system].potential += d.moldCost;
-        if (d.sharedVehicle === "") systemStats[d.system].actual += d.moldCost;
-    });
-
-    const systems = Object.keys(systemStats).map(s => {
-        const stats = systemStats[s];
-        const saved = stats.potential - stats.actual;
-        const rate = stats.potential > 0 ? (saved / stats.potential) * 100 : 0;
-        return { name: s, ...stats, saved, rate };
-    });
-
-    // Top Efficiency (Sorted by rate desc)
-    const topEfficiency = [...systems].sort((a, b) => b.rate - a.rate).slice(0, 3);
-    efficiencyList.innerHTML = topEfficiency.map(s => `
-        <div class="flex flex-col gap-1 p-3 rounded bg-emerald-500/5 border border-emerald-500/10">
-            <div class="flex justify-between items-center">
-                <span class="text-[10px] font-black text-foreground uppercase tracking-tighter">${s.name}</span>
-                <span class="text-xs font-black text-emerald-500">${Math.round(s.rate)}% 공용화</span>
+    container.innerHTML = items.map(item => {
+        const actualWidth = item.potential > 0 ? (item.actual / item.potential) * 100 : 0;
+        const savedWidth = item.potential > 0 ? (item.saved / item.potential) * 100 : 0;
+        return `
+            <div class="space-y-1.5 group">
+                <div class="flex justify-between items-end">
+                    <span class="text-[10px] font-black text-foreground uppercase tracking-tighter">${item.name}</span>
+                    <span class="text-[9px] font-bold text-muted-foreground tabular-nums">기준 ${item.potential.toLocaleString()}억</span>
+                </div>
+                <div class="relative w-full h-8 bg-foreground/5 rounded-sm overflow-hidden flex border border-border/50 group-hover:border-foreground/20 transition-colors">
+                    <div class="h-full bg-foreground flex items-center justify-center transition-all duration-700" style="width: ${actualWidth}%">
+                        ${actualWidth > 15 ? `<span class="text-[9px] font-black text-background">실제 ${item.actual}억</span>` : ''}
+                    </div>
+                    <div class="h-full bg-emerald-500/80 flex items-center justify-center transition-all duration-700" style="width: ${savedWidth}%">
+                        ${savedWidth > 15 ? `<span class="text-[9px] font-black text-white">절감 ${item.saved}억</span>` : ''}
+                    </div>
+                </div>
             </div>
-            <div class="flex justify-between items-end">
-                <span class="text-[8px] text-muted-foreground uppercase font-bold tracking-widest">절감투자비</span>
-                <span class="text-sm font-bold text-foreground">${s.saved.toLocaleString()} 억</span>
-            </div>
-        </div>
-    `).join('');
-
-    // Bottlenecks (Sorted by actual cost desc)
-    const bottlenecks = [...systems].sort((a, b) => b.actual - a.actual).slice(0, 3);
-    bottleneckList.innerHTML = bottlenecks.map(s => `
-        <div class="flex flex-col gap-1 p-3 rounded bg-rose-500/5 border border-rose-500/10">
-            <div class="flex justify-between items-center">
-                <span class="text-[10px] font-black text-foreground uppercase tracking-tighter">${s.name}</span>
-                <span class="text-xs font-black text-rose-500">${s.actual.toLocaleString()} 억 실제투자</span>
-            </div>
-            <div class="w-full bg-rose-500/10 h-1 rounded-full overflow-hidden mt-1">
-                <div class="bg-rose-500 h-full" style="width: ${Math.min(100, (s.actual / 500) * 100)}%"></div>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function renderSharingChart(actual, potential) {

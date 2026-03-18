@@ -134,56 +134,32 @@
                 </div>
             </div>
 
-            <!-- Analysis Section: Matrix & Contribution -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-                <!-- Vehicle Sharing Matrix -->
-                <div class="lg:col-span-2 rounded-xl border border-border bg-background/40 p-8 backdrop-blur-sm shadow-lg">
-                    <h3 class="text-sm font-bold uppercase tracking-widest mb-6 text-foreground border-b border-border pb-4">Vehicle Sharing Matrix (Borrower vs Provider)</h3>
-                    <div class="overflow-x-auto">
-                        <div id="sharing-matrix" class="min-w-[500px]">
-                            <!-- Matrix will be rendered here -->
-                        </div>
+            <!-- Analysis Section: Progress Bar Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <!-- System Sharing Chart -->
+                <div class="rounded-xl border border-border bg-background/40 p-8 backdrop-blur-sm shadow-lg">
+                    <div class="flex items-center justify-between mb-8 border-b border-border pb-4">
+                        <h3 class="text-sm font-bold uppercase tracking-widest text-foreground">시스템별 공용화 현황</h3>
+                        <button id="sort-system-chart" class="text-[10px] font-black px-3 py-1 rounded border border-border hover:bg-foreground/10 transition-all uppercase tracking-tighter">기본순</button>
                     </div>
-                    <div class="mt-4 flex items-center justify-end gap-4 text-[10px] text-muted-foreground uppercase font-bold">
-                        <span>Low Sharing</span>
-                        <div class="flex gap-1">
-                            <div class="w-3 h-3 bg-foreground/5 rounded-sm"></div>
-                            <div class="w-3 h-3 bg-emerald-500/20 rounded-sm"></div>
-                            <div class="w-3 h-3 bg-emerald-500/40 rounded-sm"></div>
-                            <div class="w-3 h-3 bg-emerald-500/60 rounded-sm"></div>
-                            <div class="w-3 h-3 bg-emerald-500/80 rounded-sm"></div>
-                        </div>
-                        <span>High Sharing</span>
+                    <div id="system-bar-chart" class="space-y-6">
+                        <!-- Bars will be rendered here -->
                     </div>
                 </div>
 
-                <!-- System Contribution & Bottleneck -->
-                <div class="space-y-8">
-                    <!-- Top Efficiency -->
-                    <div class="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.02] p-6 backdrop-blur-sm shadow-lg">
-                        <h3 class="text-xs font-bold uppercase tracking-widest mb-6 text-emerald-500 flex items-center gap-2">
-                            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                            Top Efficiency Systems
-                        </h3>
-                        <div id="efficiency-list" class="space-y-4">
-                            <!-- List will be rendered here -->
-                        </div>
+                <!-- Vehicle Sharing Chart -->
+                <div class="rounded-xl border border-border bg-background/40 p-8 backdrop-blur-sm shadow-lg">
+                    <div class="flex items-center justify-between mb-8 border-b border-border pb-4">
+                        <h3 class="text-sm font-bold uppercase tracking-widest text-foreground">차종별 공용화 현황</h3>
+                        <button id="sort-vehicle-chart" class="text-[10px] font-black px-3 py-1 rounded border border-border hover:bg-foreground/10 transition-all uppercase tracking-tighter">기본순</button>
                     </div>
-
-                    <!-- Bottleneck -->
-                    <div class="rounded-xl border border-rose-500/20 bg-rose-500/[0.02] p-6 backdrop-blur-sm shadow-lg">
-                        <h3 class="text-xs font-bold uppercase tracking-widest mb-6 text-rose-500 flex items-center gap-2">
-                            <span class="w-2 h-2 bg-rose-500 rounded-full"></span>
-                            Investment Bottlenecks
-                        </h3>
-                        <div id="bottleneck-list" class="space-y-4">
-                            <!-- List will be rendered here -->
-                        </div>
+                    <div id="vehicle-bar-chart" class="space-y-6">
+                        <!-- Bars will be rendered here -->
                     </div>
                 </div>
             </div>
 
-            <!-- Charts Section -->
+            <!-- Charts Section (Pie & Vertical Bar) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                 <!-- System Pie Chart -->
                 <div class="rounded-xl border border-border bg-background/40 p-8 backdrop-blur-sm shadow-lg">
