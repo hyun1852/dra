@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('sort-order').addEventListener('change', handleFilter);
     document.getElementById('search-input').addEventListener('input', handleFilter);
     document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+    document.getElementById('download-excel').addEventListener('click', exportToExcel);
     
     // System Chart Controls
     document.getElementById('sort-system-chart').addEventListener('click', () => {
@@ -467,4 +468,61 @@ function toggleTheme() {
 function updateThemeBtn(t) {
     const btn = document.getElementById('theme-toggle');
     btn.textContent = t === 'dark' ? 'LIGHT' : 'DARK';
+}
+
+function exportToExcel() {
+    if (!filteredData || filteredData.length === 0) {
+        alert("다운로드할 데이터가 없습니다.");
+        return;
+    }
+
+    // 1. Group data same as table rendering logic
+    const groupedRows = [];
+    const vehicleList = ["NE2", "NV1", "JK2", "JW2", "ME2", "MV2"];
+
+    filteredData.forEach(item => {
+        const key = `${item.domain}-${item.system}-${item.modularSystem}-${item.part}-${item.spec}`;
+        let existing = groupedRows.find(r => r.key === key);
+        if (!existing) {
+            existing = { ...item, key, vehicles: {}, totalInvestment: 0 };
+            groupedRows.push(existing);
+        }
+        existing.vehicles[item.targetVehicle] = item.sharedVehicle === "" ? "신규" : item.sharedVehicle;
+        if (item.sharedVehicle === "") {
+            existing.totalInvestment += item.moldCost;
+        }
+    });
+
+    // 2. Format for XLSX
+    const excelData = groupedRows.map(r => {
+        const row = {
+            "도메인": r.domain,
+            "시스템": r.system,
+            "모듈러시스템": r.modularSystem,
+            "부품": r.part,
+            "사양": r.spec,
+            "금형투자비(억)": r.moldCost,
+            "총 금형투자비(억)": r.totalInvestment
+        };
+        // Add vehicle columns
+        vehicleList.forEach(v => {
+            row[v] = r.vehicles[v] || "-";
+        });
+        return row;
+    });
+
+    // 3. Create Workbook and Download
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Parts_Data");
+
+    // Auto-size columns (basic)
+    const wscols = [
+        {wch: 15}, {wch: 15}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15},
+        {wch: 8}, {wch: 8}, {wch: 8}, {wch: 8}, {wch: 8}, {wch: 8}
+    ];
+    worksheet['!cols'] = wscols;
+
+    const date = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(workbook, `Mold_Investment_Dashboard_${date}.xlsx`);
 }
