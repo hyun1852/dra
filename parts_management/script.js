@@ -132,28 +132,34 @@ function renderDashboard() {
     const tableBody = document.getElementById('table-body');
     const totalDomainsEl = document.getElementById('total-domains');
     const totalSystemsEl = document.getElementById('total-systems');
-    const totalModularsEl = document.getElementById('total-modulars');
     const totalPartsEl = document.getElementById('total-parts');
     const totalSpecsEl = document.getElementById('total-specs');
+    const potentialTotalEl = document.getElementById('potential-total-cost');
     const totalCostEl = document.getElementById('total-cost');
+    const costAvoidanceEl = document.getElementById('cost-avoidance');
     const sharingRateEl = document.getElementById('sharing-rate');
 
     const domainSet = new Set(filteredData.map(d => d.domain));
     const systemSet = new Set(filteredData.map(d => d.system));
-    const modularSet = new Set(filteredData.map(d => d.modularSystem));
     const specSet = new Set(filteredData.map(d => d.spec));
     
     const actualSpentCost = filteredData.reduce((sum, d) => d.sharedVehicle === "" ? sum + d.moldCost : sum, 0);
     const potentialTotalCost = filteredData.reduce((sum, d) => sum + d.moldCost, 0);
-    const sharingRate = potentialTotalCost > 0 ? ((potentialTotalCost - actualSpentCost) / potentialTotalCost) * 100 : 0;
+    const costAvoidance = potentialTotalCost - actualSpentCost;
+    const sharingRate = potentialTotalCost > 0 ? (costAvoidance / potentialTotalCost) * 100 : 0;
 
     animateNumber(totalDomainsEl, domainSet.size);
     animateNumber(totalSystemsEl, systemSet.size);
-    animateNumber(totalModularsEl, modularSet.size);
     animateNumber(totalPartsEl, filteredData.length);
     animateNumber(totalSpecsEl, specSet.size);
-    animateNumber(totalCostEl, actualSpentCost, true, 600);
+    animateNumber(potentialTotalEl, potentialTotalCost);
+    animateNumber(totalCostEl, actualSpentCost);
+    animateNumber(costAvoidanceEl, costAvoidance);
     sharingRateEl.textContent = `${Math.round(sharingRate)}%`;
+
+    // Render Matrix & Lists
+    renderSharingMatrix(filteredData);
+    renderContributionLists(filteredData);
 
     const groupedRows = [];
     const vehicleList = ["NE2", "NV1", "JK2", "JW2", "ME2", "MV2"];
@@ -214,6 +220,102 @@ function renderDashboard() {
 
     renderChart(filteredData);
     renderSharingChart(actualSpentCost, potentialTotalCost);
+}
+
+function renderSharingMatrix(data) {
+    const container = document.getElementById('sharing-matrix');
+    const borrowers = [...new Set(data.map(d => d.targetVehicle))].sort();
+    const providers = [...new Set(data.filter(d => d.sharedVehicle !== "").map(d => d.sharedVehicle))].sort();
+    
+    if (providers.length === 0) {
+        container.innerHTML = '<div class="text-center py-12 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">No Sharing Data Available</div>';
+        return;
+    }
+
+    const matrixData = {};
+    let maxCost = 0;
+
+    borrowers.forEach(b => {
+        matrixData[b] = {};
+        providers.forEach(p => {
+            const cost = data
+                .filter(d => d.targetVehicle === b && d.sharedVehicle === p)
+                .reduce((sum, d) => sum + d.moldCost, 0);
+            matrixData[b][p] = cost;
+            if (cost > maxCost) maxCost = cost;
+        });
+    });
+
+    let html = `<div class="grid" style="grid-template-columns: 80px repeat(${providers.length}, 1fr);">`;
+    // Header
+    html += `<div class="p-2 border-b border-r border-border flex items-end justify-center text-[8px] font-black text-muted-foreground">Provider →</div>`;
+    providers.forEach(p => {
+        html += `<div class="p-2 border-b border-border text-center text-[10px] font-black text-foreground bg-foreground/5">${p}</div>`;
+    });
+
+    // Rows
+    borrowers.forEach(b => {
+        html += `<div class="p-2 border-r border-border text-center text-[10px] font-black text-foreground bg-foreground/5 flex items-center justify-center">${b}</div>`;
+        providers.forEach(p => {
+            const cost = matrixData[b][p];
+            const opacity = maxCost > 0 ? (cost / maxCost) : 0;
+            const bgStyle = cost > 0 ? `background-color: rgba(16, 185, 129, ${0.1 + opacity * 0.8}); color: ${opacity > 0.5 ? '#fff' : 'inherit'};` : '';
+            html += `<div class="p-2 border-b border-r border-border/20 text-center text-[10px] tabular-nums font-bold transition-all hover:scale-105 hover:z-10 cursor-default" style="${bgStyle}">
+                        ${cost > 0 ? cost : '-'}
+                     </div>`;
+        });
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+function renderContributionLists(data) {
+    const efficiencyList = document.getElementById('efficiency-list');
+    const bottleneckList = document.getElementById('bottleneck-list');
+
+    // Calculate per-system stats
+    const systemStats = {};
+    data.forEach(d => {
+        if (!systemStats[d.system]) systemStats[d.system] = { potential: 0, actual: 0 };
+        systemStats[d.system].potential += d.moldCost;
+        if (d.sharedVehicle === "") systemStats[d.system].actual += d.moldCost;
+    });
+
+    const systems = Object.keys(systemStats).map(s => {
+        const stats = systemStats[s];
+        const saved = stats.potential - stats.actual;
+        const rate = stats.potential > 0 ? (saved / stats.potential) * 100 : 0;
+        return { name: s, ...stats, saved, rate };
+    });
+
+    // Top Efficiency (Sorted by rate desc)
+    const topEfficiency = [...systems].sort((a, b) => b.rate - a.rate).slice(0, 3);
+    efficiencyList.innerHTML = topEfficiency.map(s => `
+        <div class="flex flex-col gap-1 p-3 rounded bg-emerald-500/5 border border-emerald-500/10">
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-black text-foreground uppercase tracking-tighter">${s.name}</span>
+                <span class="text-xs font-black text-emerald-500">${Math.round(s.rate)}% Shared</span>
+            </div>
+            <div class="flex justify-between items-end">
+                <span class="text-[8px] text-muted-foreground uppercase font-bold tracking-widest">Saved Cost</span>
+                <span class="text-sm font-bold text-foreground">${s.saved.toLocaleString()} 억</span>
+            </div>
+        </div>
+    `).join('');
+
+    // Bottlenecks (Sorted by actual cost desc)
+    const bottlenecks = [...systems].sort((a, b) => b.actual - a.actual).slice(0, 3);
+    bottleneckList.innerHTML = bottlenecks.map(s => `
+        <div class="flex flex-col gap-1 p-3 rounded bg-rose-500/5 border border-rose-500/10">
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-black text-foreground uppercase tracking-tighter">${s.name}</span>
+                <span class="text-xs font-black text-rose-500">${s.actual.toLocaleString()} 억 Invest</span>
+            </div>
+            <div class="w-full bg-rose-500/10 h-1 rounded-full overflow-hidden mt-1">
+                <div class="bg-rose-500 h-full" style="width: ${Math.min(100, (s.actual / 500) * 100)}%"></div>
+            </div>
+        </div>
+    `).join('');
 }
 
 function renderSharingChart(actual, potential) {

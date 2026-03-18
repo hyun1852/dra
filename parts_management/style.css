@@ -89,24 +89,33 @@ thead th {
     overflow: visible !important;
 }
 
-/* Specific Column Alignments */
-th:nth-child(6), td:nth-child(6) {
-    text-align: right;
+/* Vertical Text Utility */
+.vertical-text {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
 }
 
-th:nth-child(7), td:nth-child(7),
-th:nth-child(8), td:nth-child(8) {
-    text-align: center;
+/* Sharing Matrix Cell */
+#sharing-matrix .grid > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
 }
 
-/* Unified Hover Effect */
-tr td {
-    transition: background-color 0.2s ease;
+/* Animations and Transitions */
+.group-row td {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-tr:hover td,
-td.cell-highlight {
-    background-color: hsl(var(--foreground) / 0.06) !important;
+.cell-highlight {
+    background-color: hsl(var(--foreground) / 0.1) !important;
+}
+
+/* Tooltip or extra hover info */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
 }
 
 /* Shared Vehicle Tag (Grayscale) */
