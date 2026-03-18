@@ -1,9 +1,11 @@
 {
   "primaryFeature": "raw_data_download",
-  "status": "designing",
+  "status": "analyzed",
   "lastUpdate": "2026-03-18",
   "planFile": "docs/01-plan/features/raw_data_download.plan.md",
   "designFile": "docs/02-design/features/raw_data_download.design.md",
-  "_snapshotTimestamp": "2026-03-18T12:53:51.831Z",
+  "analysisFile": "docs/03-analysis/raw_data_download.analysis.md",
+  "matchRate": 95,
+  "_snapshotTimestamp": "2026-03-18T12:59:06.502Z",
   "_reason": "pre-compress"
 }
