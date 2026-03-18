@@ -21,10 +21,10 @@
 ## 3. 상세 설계 (Detailed Design)
 ### 3.1 투자비 절감액(Cost Avoidance) 요약 섹션
 - **디자인**: 상단 Hero 섹션에 4개의 주요 카드 배치.
-  - `Potential Total`: 모든 부품 신규 투자 시 비용.
-  - `Actual Spent`: 공용화 적용 후 실제 투자 비용.
-  - `Cost Avoidance`: 절감된 총액 (Potential - Actual).
-  - `Efficiency Rate`: (Cost Avoidance / Potential) * 100.
+  - `기준투자비`: 모든 부품 신규 투자 시 비용.
+  - `실제투자비`: 공용화 적용 후 실제 투자 비용.
+  - `절감투자비`: 절감된 총액 (기준투자비 - 실제투자비).
+  - `공용화율`: (절감투자비 / 기준투자비) * 100.
 
 ### 3.2 차종 간 공용화 매트릭스 (Vehicle Sharing Matrix)
 - **구조**:
@@ -45,7 +45,7 @@
 
 ### 3.3 시스템별 기여도 및 병목 분석 (System Contribution)
 - **Top Efficiency**: 공용화율이 가장 높은 시스템 상위 3개 표시.
-- **Investment Bottleneck**: 신규 투자비가 가장 많이 발생하는 시스템 상위 3개 표시.
+- **Investment Bottleneck**: 실제투자비가 가장 많이 발생하는 시스템 상위 3개 표시.
 
 ## 4. UI/UX 디자인 가이드
 - **Color Palette**: Dark 모드 기반, Accent Color로 `emerald-500`(절감액) 및 `rose-500`(병목 지점) 사용.

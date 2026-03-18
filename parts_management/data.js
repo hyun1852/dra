@@ -12,7 +12,7 @@ const partsData = [
     // 2. RR SEAT
     { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Rear Frame", spec: "6:4 Foldable", moldCost: 80, targetVehicle: "NE2", sharedVehicle: "" },
     { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Rear Frame", spec: "6:4 Foldable", moldCost: 80, targetVehicle: "NV1", sharedVehicle: "NE2" },
-    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Rear Frame", spec: "6:4 Foldable", moldCost: 80, targetVehicle: "JK2", sharedVehicle: "" },
+    { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Rear Frame", spec: "6:4 Foldable", moldCost: 80, targetVehicle: "JK2", sharedVehicle: "NV1" },
     { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "Center Armrest", spec: "Integrated", moldCost: 30, targetVehicle: "NE2", sharedVehicle: "" },
     { domain: "시트/칵핏", system: "시트", modularSystem: "RR SEAT", part: "ISOFIX Bracket", spec: "Steel", moldCost: 10, targetVehicle: "NE2", sharedVehicle: "" },
 
@@ -42,7 +42,7 @@ const partsData = [
     // 6. HEAD LAMP
     { domain: "전장/편의", system: "램프", modularSystem: "HEAD LAMP", part: "LED Module", spec: "Matrix LED", moldCost: 200, targetVehicle: "NE2", sharedVehicle: "" },
     { domain: "전장/편의", system: "램프", modularSystem: "HEAD LAMP", part: "LED Module", spec: "Matrix LED", moldCost: 200, targetVehicle: "NV1", sharedVehicle: "NE2" },
-    { domain: "전장/편의", system: "램프", modularSystem: "HEAD LAMP", part: "LED Module", spec: "Basic LED", moldCost: 150, targetVehicle: "JK2", sharedVehicle: "" },
+    { domain: "전장/편의", system: "램프", modularSystem: "HEAD LAMP", part: "LED Module", spec: "Basic LED", moldCost: 150, targetVehicle: "JK2", sharedVehicle: "NV1" },
     { domain: "전장/편의", system: "램프", modularSystem: "HEAD LAMP", part: "Housing", spec: "Light-Weight", moldCost: 80, targetVehicle: "NE2", sharedVehicle: "" },
     { domain: "전장/편의", system: "램프", modularSystem: "HEAD LAMP", part: "Lens", spec: "Clear Type", moldCost: 60, targetVehicle: "NE2", sharedVehicle: "" },
 
@@ -70,7 +70,7 @@ const partsData = [
     // 10. FOG LAMP
     { domain: "전장/편의", system: "램프", modularSystem: "FOG LAMP", part: "Projection Lens", spec: "Wide View", moldCost: 50, targetVehicle: "NE2", sharedVehicle: "" },
     { domain: "전장/편의", system: "램프", modularSystem: "FOG LAMP", part: "LED Unit", spec: "Vertical Type", moldCost: 65, targetVehicle: "NE2", sharedVehicle: "" },
-    { domain: "전장/편의", system: "램프", modularSystem: "FOG LAMP", part: "LED Unit", spec: "Horizontal Type", moldCost: 60, targetVehicle: "JK2", sharedVehicle: "" },
+    { domain: "전장/편의", system: "램프", modularSystem: "FOG LAMP", part: "LED Unit", spec: "Horizontal Type", moldCost: 60, targetVehicle: "JK2", sharedVehicle: "NV1" },
     { domain: "전장/편의", system: "램프", modularSystem: "FOG LAMP", part: "Bracket", spec: "Standard", moldCost: 20, targetVehicle: "NE2", sharedVehicle: "" },
     { domain: "전장/편의", system: "램프", modularSystem: "FOG LAMP", part: "Bezel", spec: "Black High-Gloss", moldCost: 30, targetVehicle: "NE2", sharedVehicle: "" }
 ];

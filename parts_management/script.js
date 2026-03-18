@@ -294,10 +294,10 @@ function renderContributionLists(data) {
         <div class="flex flex-col gap-1 p-3 rounded bg-emerald-500/5 border border-emerald-500/10">
             <div class="flex justify-between items-center">
                 <span class="text-[10px] font-black text-foreground uppercase tracking-tighter">${s.name}</span>
-                <span class="text-xs font-black text-emerald-500">${Math.round(s.rate)}% Shared</span>
+                <span class="text-xs font-black text-emerald-500">${Math.round(s.rate)}% 공용화</span>
             </div>
             <div class="flex justify-between items-end">
-                <span class="text-[8px] text-muted-foreground uppercase font-bold tracking-widest">Saved Cost</span>
+                <span class="text-[8px] text-muted-foreground uppercase font-bold tracking-widest">절감투자비</span>
                 <span class="text-sm font-bold text-foreground">${s.saved.toLocaleString()} 억</span>
             </div>
         </div>
@@ -309,7 +309,7 @@ function renderContributionLists(data) {
         <div class="flex flex-col gap-1 p-3 rounded bg-rose-500/5 border border-rose-500/10">
             <div class="flex justify-between items-center">
                 <span class="text-[10px] font-black text-foreground uppercase tracking-tighter">${s.name}</span>
-                <span class="text-xs font-black text-rose-500">${s.actual.toLocaleString()} 억 Invest</span>
+                <span class="text-xs font-black text-rose-500">${s.actual.toLocaleString()} 억 실제투자</span>
             </div>
             <div class="w-full bg-rose-500/10 h-1 rounded-full overflow-hidden mt-1">
                 <div class="bg-rose-500 h-full" style="width: ${Math.min(100, (s.actual / 500) * 100)}%"></div>
