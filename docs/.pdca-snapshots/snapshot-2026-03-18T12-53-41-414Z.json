@@ -1,0 +1,9 @@
+{
+  "primaryFeature": "raw_data_download",
+  "status": "designing",
+  "lastUpdate": "2026-03-18",
+  "planFile": "docs/01-plan/features/raw_data_download.plan.md",
+  "designFile": "docs/02-design/features/raw_data_download.design.md",
+  "_snapshotTimestamp": "2026-03-18T12:53:41.415Z",
+  "_reason": "pre-compress"
+}
