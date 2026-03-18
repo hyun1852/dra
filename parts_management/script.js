@@ -3,12 +3,12 @@ import partsData from './data.js';
 let filteredData = [...partsData];
 
 let chartSortStates = {
-    system: 'default',
-    vehicle: 'default'
+    system: 'default', // 'default', 'cost', 'rate'
+    vehicle: 'default' // 'default', 'cost', 'rate'
 };
 
 let chartScaleModes = {
-    system: 'fixed',
+    system: 'fixed', // 'fixed', 'actual'
     vehicle: 'fixed'
 };
 
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('toggle-system-scale').addEventListener('click', () => {
         chartScaleModes.system = chartScaleModes.system === 'fixed' ? 'actual' : 'fixed';
-        document.getElementById('toggle-system-scale').textContent = chartScaleModes.system === 'fixed' ? 'Actual' : 'Fixed';
+        document.getElementById('toggle-system-scale').textContent = chartScaleModes.system === 'fixed' ? '누적' : '기본';
         renderSystemSharingChart(filteredData);
     });
 
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('toggle-vehicle-scale').addEventListener('click', () => {
         chartScaleModes.vehicle = chartScaleModes.vehicle === 'fixed' ? 'actual' : 'fixed';
-        document.getElementById('toggle-vehicle-scale').textContent = chartScaleModes.vehicle === 'fixed' ? 'Actual' : 'Fixed';
+        document.getElementById('toggle-vehicle-scale').textContent = chartScaleModes.vehicle === 'fixed' ? '누적' : '기본';
         renderVehicleSharingChart(filteredData);
     });
 });
@@ -189,7 +189,7 @@ function renderDashboard() {
     sharingRateEl.textContent = `${Math.round(sharingRate)}%`;
 
     renderChart(filteredData);
-    renderVerticalSharingChart(actualSpentCost, potentialTotalCost);
+    renderOverallSharingBar(actualSpentCost, potentialTotalCost);
     renderSystemSharingChart(filteredData);
     renderVehicleSharingChart(filteredData);
 
@@ -243,23 +243,25 @@ function renderDashboard() {
     }, 50);
 }
 
-function renderVerticalSharingChart(actual, potential) {
-    const container = document.getElementById('vertical-sharing-container');
+function renderOverallSharingBar(actual, potential) {
+    const container = document.getElementById('overall-sharing-bar');
     const saved = potential - actual;
-    const actualHeight = potential > 0 ? (actual / potential) * 100 : 0;
-    const savedHeight = potential > 0 ? (saved / potential) * 100 : 0;
+    const rate = potential > 0 ? (saved / potential) * 100 : 0;
+    const actualWidth = potential > 0 ? (actual / potential) * 100 : 0;
+    const savedWidth = potential > 0 ? (saved / potential) * 100 : 0;
+
     container.innerHTML = `
-        <div class="relative w-8 h-full bg-foreground/5 rounded-sm overflow-hidden flex flex-col-reverse border border-border/50">
-            <div class="w-full bg-foreground transition-all duration-700 flex items-center justify-center overflow-hidden" style="height: ${actualHeight}%">
-                ${actualHeight > 10 ? `<span class="text-[8px] font-black text-background vertical-text transform rotate-180">${actual}</span>` : ''}
-            </div>
-            <div class="w-full bg-emerald-500 transition-all duration-700 flex items-center justify-center overflow-hidden" style="height: ${savedHeight}%">
-                ${savedHeight > 10 ? `<span class="text-[8px] font-black text-white vertical-text transform rotate-180">${saved}</span>` : ''}
-            </div>
+        <div class="flex justify-between items-end mb-1">
+            <span class="text-[9px] font-black text-foreground uppercase tracking-tighter">전체 공용화 현황</span>
+            <span class="text-[8px] font-bold text-muted-foreground tabular-nums">기준 ${potential.toLocaleString()}억</span>
         </div>
-        <div class="mt-2 text-center shrink-0">
-            <span class="text-[9px] font-black block text-foreground">${potential}</span>
-            <span class="text-[7px] uppercase text-muted-foreground font-bold tracking-tighter">TOTAL</span>
+        <div class="relative w-full h-6 bg-foreground/5 rounded-sm overflow-hidden flex border border-border/50">
+            <div class="h-full bg-foreground flex items-center justify-center transition-all duration-700" style="width: ${actualWidth}%">
+                ${actualWidth > 15 ? `<span class="text-[8px] font-black text-background">${actual}</span>` : ''}
+            </div>
+            <div class="h-full bg-emerald-500 flex items-center justify-center transition-all duration-700" style="width: ${savedWidth}%">
+                ${savedWidth > 15 ? `<span class="text-[8px] font-black text-white">${saved} (${Math.round(rate)}%)</span>` : ''}
+            </div>
         </div>
     `;
 }
@@ -319,15 +321,15 @@ function renderHorizontalBars(container, items, maxPotential, scaleMode) {
             <div class="space-y-1 group">
                 <div class="flex justify-between items-end">
                     <span class="text-[9px] font-black text-foreground uppercase tracking-tighter truncate w-24">${item.name}</span>
-                    <span class="text-[8px] font-bold text-muted-foreground tabular-nums">${item.potential.toLocaleString()}억 (${Math.round(item.rate)}%)</span>
+                    <span class="text-[8px] font-bold text-muted-foreground tabular-nums">${item.potential.toLocaleString()}억</span>
                 </div>
                 <div class="relative h-6 flex transition-all duration-500" style="width: ${containerWidth}%">
                     <div class="relative flex-1 bg-foreground/5 rounded-sm overflow-hidden flex border border-border/50 group-hover:border-foreground/20 transition-colors">
                         <div class="h-full bg-foreground flex items-center justify-center transition-all duration-700" style="width: ${actualWidth}%">
-                            ${actualWidth > 20 ? `<span class="text-[8px] font-black text-background">${item.actual}</span>` : ''}
+                            ${actualWidth > 15 ? `<span class="text-[8px] font-black text-background">${item.actual}</span>` : ''}
                         </div>
                         <div class="h-full bg-emerald-500 flex items-center justify-center transition-all duration-700" style="width: ${savedWidth}%">
-                            ${savedWidth > 20 ? `<span class="text-[8px] font-black text-white">${item.saved}</span>` : ''}
+                            ${savedWidth > 15 ? `<span class="text-[8px] font-black text-white">${item.saved} (${Math.round(item.rate)}%)</span>` : ''}
                         </div>
                     </div>
                 </div>

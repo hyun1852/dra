@@ -134,33 +134,31 @@
                 </div>
             </div>
 
-            <!-- Analysis Section: Charts in 1.5 : 0.5 : 4 : 4 Ratio -->
+            <!-- Analysis Section: Charts in 2 : 4 : 4 Ratio -->
             <div class="flex flex-col lg:flex-row gap-4 mb-12 h-auto lg:h-[400px]">
-                <!-- 1. System Pie Chart (1.5) -->
-                <div class="lg:flex-[1.5] rounded-xl border border-border bg-background/40 p-4 backdrop-blur-sm shadow-lg flex flex-col overflow-hidden min-w-0">
+                <!-- 1. System Pie Chart & Overall Sharing (Ratio 2) -->
+                <div class="lg:flex-[2] rounded-xl border border-border bg-background/40 p-4 backdrop-blur-sm shadow-lg flex flex-col overflow-hidden min-w-0">
                     <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-foreground text-center border-b border-border pb-2">시스템 투자비 비중</h3>
-                    <div class="flex-1 flex flex-col items-center justify-center gap-4 overflow-hidden">
-                        <div class="relative w-24 h-24 shrink-0">
+                    <div class="flex-1 flex flex-col items-center justify-center gap-6 overflow-hidden">
+                        <div class="relative w-28 h-24 shrink-0 flex items-center justify-center">
                             <svg id="mold-chart" class="w-full h-full transform -rotate-90" viewBox="0 0 42 42"></svg>
                         </div>
                         <div id="chart-legend" class="w-full space-y-1 overflow-y-auto pr-1 text-[8px] scrollbar-thin scrollbar-thumb-border"></div>
                     </div>
-                </div>
-
-                <!-- 2. Overall Vertical Bar (0.5) -->
-                <div class="lg:flex-[0.5] rounded-xl border border-border bg-background/40 p-4 backdrop-blur-sm shadow-lg flex flex-col overflow-hidden min-w-0">
-                    <h3 class="text-[10px] font-bold uppercase tracking-widest mb-4 text-foreground text-center border-b border-border pb-2">공용화 현황</h3>
-                    <div id="vertical-sharing-container" class="flex-1 flex flex-col items-center justify-end pb-2 overflow-hidden">
-                        <!-- Vertical bar will be rendered here -->
+                    <!-- Combined Overall Sharing Bar at bottom -->
+                    <div class="mt-4 pt-4 border-t border-border/50">
+                        <div id="overall-sharing-bar" class="space-y-1.5">
+                            <!-- Overall horizontal bar will be rendered here -->
+                        </div>
                     </div>
                 </div>
 
-                <!-- 3. System Horizontal Bar (4.0) -->
+                <!-- 2. System Horizontal Bar (Ratio 4) -->
                 <div class="lg:flex-[4] rounded-xl border border-border bg-background/40 p-5 backdrop-blur-sm shadow-lg flex flex-col overflow-hidden min-w-0">
                     <div class="flex items-center justify-between mb-3 border-b border-border pb-2 shrink-0">
                         <h3 class="text-[10px] font-bold uppercase tracking-widest text-foreground">시스템별 공용화 현황</h3>
                         <div class="flex gap-2">
-                            <button id="toggle-system-scale" class="text-[8px] font-black px-1.5 py-0.5 rounded border border-border hover:bg-foreground/10 transition-all uppercase">Actual</button>
+                            <button id="toggle-system-scale" class="text-[8px] font-black px-1.5 py-0.5 rounded border border-border hover:bg-foreground/10 transition-all uppercase">누적</button>
                             <button id="sort-system-chart" class="text-[8px] font-black px-1.5 py-0.5 rounded border border-border hover:bg-foreground/10 transition-all uppercase">기본순</button>
                         </div>
                     </div>
@@ -172,12 +170,12 @@
                     <div id="system-bar-chart" class="flex-1 space-y-3 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-border"></div>
                 </div>
 
-                <!-- 4. Vehicle Horizontal Bar (4.0) -->
+                <!-- 3. Vehicle Horizontal Bar (Ratio 4) -->
                 <div class="lg:flex-[4] rounded-xl border border-border bg-background/40 p-5 backdrop-blur-sm shadow-lg flex flex-col overflow-hidden min-w-0">
                     <div class="flex items-center justify-between mb-3 border-b border-border pb-2 shrink-0">
                         <h3 class="text-[10px] font-bold uppercase tracking-widest text-foreground">차종별 공용화 현황</h3>
                         <div class="flex gap-2">
-                            <button id="toggle-vehicle-scale" class="text-[8px] font-black px-1.5 py-0.5 rounded border border-border hover:bg-foreground/10 transition-all uppercase">Actual</button>
+                            <button id="toggle-vehicle-scale" class="text-[8px] font-black px-1.5 py-0.5 rounded border border-border hover:bg-foreground/10 transition-all uppercase">누적</button>
                             <button id="sort-vehicle-chart" class="text-[8px] font-black px-1.5 py-0.5 rounded border border-border hover:bg-foreground/10 transition-all uppercase">기본순</button>
                         </div>
                     </div>
