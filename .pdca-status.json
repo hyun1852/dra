@@ -1,9 +1,23 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-03-18T11:14:59.815Z",
+  "lastUpdated": "2026-03-22T14:03:55.633Z",
   "activeFeatures": [],
   "primaryFeature": null,
-  "features": {},
+  "features": {
+    "mold_cost_management": {
+      "name": "mold_cost_management",
+      "status": "completed",
+      "currentPhase": "report",
+      "documents": {
+        "plan": "docs/01-plan/features/mold_cost_management.plan.md",
+        "design": "docs/02-design/features/mold_cost_management.design.md",
+        "analysis": "docs/03-analysis/mold_cost_management.analysis.md",
+        "report": "docs/04-report/mold_cost_management.report.md"
+      },
+      "createdAt": "2026-03-20T04:49:11.468Z",
+      "updatedAt": "2026-03-20T04:49:11.468Z"
+    }
+  },
   "pipeline": {
     "currentPhase": 1,
     "level": "Starter",

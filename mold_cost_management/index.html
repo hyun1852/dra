@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mold Cost Management Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="container" id="dropZone">
+        <header>
+            <div class="title-section">
+                <h1>금형 투자비 및 공용화 분석 현황판</h1>
+                <p>Mold Cost & Commonality Strategy Dashboard</p>
+            </div>
+            <div class="actions">
+                <button id="resetBtn" class="btn-secondary">
+                    <i data-lucide="refresh-ccw"></i> 시뮬레이션 초기화
+                </button>
+                <input type="file" id="fileInput" style="display:none" accept=".xlsx, .xls">
+                <button id="uploadBtn" class="btn-primary">
+                    <i data-lucide="upload"></i> 엑셀 업로드
+                </button>
+            </div>
+        </header>
+
+        <!-- 데이터 업로드 안내 (Empty State) -->
+        <div id="emptyState" class="empty-state">
+            <div class="empty-content">
+                <i data-lucide="file-up" size="48"></i>
+                <h2>분석할 엑셀 파일을 업로드해주세요</h2>
+                <p>파일을 이 화면으로 드래그하거나 업로드 버튼을 클릭하세요.</p>
+                <p class="sub-text">(데이터는 브라우저 내에서만 처리되며 외부로 전송되지 않습니다)</p>
+            </div>
+        </div>
+
+        <div id="dashboardContent" style="display:none">
+            <!-- KPI 현황판 -->
+            <section class="kpi-grid">
+                <div class="kpi-card mini">
+                    <span class="label">총 도메인</span>
+                    <h3 id="statDomains">0</h3>
+                </div>
+                <div class="kpi-card mini">
+                    <span class="label">총 시스템</span>
+                    <h3 id="statSystems">0</h3>
+                </div>
+                <div class="kpi-card mini">
+                    <span class="label">총 부품 수</span>
+                    <h3 id="statParts">0</h3>
+                </div>
+                <div class="kpi-card mini">
+                    <span class="label">총 사양 수</span>
+                    <h3 id="statSpecs">0</h3>
+                </div>
+                <div class="kpi-card highlight grey">
+                    <span class="label">기준 투자비</span>
+                    <h2 id="totalBaseInv">0 억</h2>
+                </div>
+                <div class="kpi-card highlight grey">
+                    <span class="label">실제 투자비</span>
+                    <h2 id="totalActualInv">0 억</h2>
+                </div>
+                <div class="kpi-card highlight green">
+                    <span class="label">절감 투자비</span>
+                    <h2 id="totalSavingsInv">0 억</h2>
+                </div>
+                <div class="kpi-card highlight green">
+                    <span class="label">공용화율</span>
+                    <h2 id="totalCommonRate">0 %</h2>
+                </div>
+            </section>
+
+            <!-- 차트 분석 섹션 -->
+            <section class="analysis-grid">
+                <div class="chart-header-row">
+                    <h3>투자비 및 공용화 상세 분석</h3>
+                    <div class="unit-toggle-inline">
+                        <button id="viewCost" class="active">비용 (억)</button>
+                        <button id="viewQty">수량 (개)</button>
+                    </div>
+                </div>
+                
+                <div class="charts-container">
+                    <div class="chart-box">
+                        <h4>시스템 투자비 비중</h4>
+                        <div class="canvas-wrapper"><canvas id="systemRatioChart"></canvas></div>
+                    </div>
+                    <div class="chart-box">
+                        <h4>전체 공용화 현황</h4>
+                        <div class="canvas-wrapper"><canvas id="totalCommonChart"></canvas></div>
+                    </div>
+                    <div class="chart-box">
+                        <h4>시스템별 공용화 현황</h4>
+                        <div class="canvas-wrapper"><canvas id="systemCommonChart"></canvas></div>
+                    </div>
+                    <div class="chart-box">
+                        <h4>차종별 공용화 현황</h4>
+                        <div class="canvas-wrapper"><canvas id="modelCommonChart"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 상세 테이블 및 필터 섹션 -->
+            <section class="table-section">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <select id="domainFilter"><option value="all">전체 도메인</option></select>
+                        <select id="systemFilter"><option value="all">전체 시스템</option></select>
+                        <select id="modularFilter"><option value="all">전체 모듈러시스템</option></select>
+                        <select id="partFilter"><option value="all">전체 부품</option></select>
+                        <select id="sortFilter">
+                            <option value="default">투자비 정렬 (기본)</option>
+                            <option value="high">투자비 높은순</option>
+                            <option value="low">투자비 낮은순</option>
+                        </select>
+                    </div>
+                    <div class="tool-group">
+                        <input type="text" id="modelSearch" placeholder="차종 검색 (예: NE2, JK2)...">
+                        <button id="downloadBtn" class="btn-primary">
+                            <i data-lucide="download"></i> 엑셀 다운로드
+                        </button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table id="partsTable">
+                        <thead><tr id="tableHeaderRow"></tr></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
