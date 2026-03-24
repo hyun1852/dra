@@ -1,8 +1,11 @@
 let currentData = [];
-let uploadedData = []; // 원본 데이터 보관용
-let filteredData = []; // 화면에 보이는 필터링된 데이터
+let uploadedData = []; // Original data storage
+let filteredData = []; // Filtered data for display
 let charts = {};
 let displayMode = 'cost';
+
+// Global access for toggle function
+window.toggleStatus = toggleStatus;
 
 document.addEventListener('DOMContentLoaded', () => {
     initDashboard();
@@ -10,8 +13,39 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDragAndDrop();
 });
 
+/**
+ * Normalizes vehicle status to one of: '신규', '공용', '-'
+ */
+function normalizeStatus(status) {
+    if (!status || status === '-') return '-';
+    if (status === '신규') return '신규';
+    if (status === '공용') return '공용';
+    // If it's a vehicle code like 'NE2', it's considered '공용' (Shared)
+    return '공용';
+}
+
 function initDashboard() {
-    const hasData = currentData.length > 0;
+    // Load MOLD_DATA if no data has been uploaded yet
+    if (uploadedData.length === 0 && typeof MOLD_DATA !== 'undefined') {
+        uploadedData = MOLD_DATA.map(item => {
+            const normalizedModels = {};
+            if (item.models) {
+                Object.keys(item.models).forEach(m => {
+                    normalizedModels[m] = normalizeStatus(item.models[m]);
+                });
+            }
+            return {
+                ...item,
+                modularSystem: item.modularSystem || item.modular || "미지정",
+                models: normalizedModels
+            };
+        });
+        currentData = JSON.parse(JSON.stringify(uploadedData));
+        applyFilters();
+        return;
+    }
+
+    const hasData = filteredData.length > 0 || currentData.length > 0;
     const emptyState = document.getElementById('emptyState');
     const dashboardContent = document.getElementById('dashboardContent');
     const resetBtn = document.getElementById('resetBtn');
@@ -91,6 +125,7 @@ function handleFile(file) {
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
             processExcelData(jsonData);
         } catch (err) {
+            console.error(err);
             alert("엑셀 처리 중 오류가 발생했습니다.");
         }
     };
@@ -120,7 +155,7 @@ function processExcelData(rows) {
         for (let i = 6; i < headers.length; i++) {
             const headerName = headers[i];
             if (headerName && !headerName.includes("투자비") && !headerName.includes("합계")) {
-                item.models[headerName] = row[i] || "-";
+                item.models[headerName] = normalizeStatus(row[i]);
             }
         }
         return item;
@@ -158,7 +193,15 @@ function applyFilters() {
     if (sort === 'high') filteredData.sort((a, b) => b.cost - a.cost);
     else if (sort === 'low') filteredData.sort((a, b) => a.cost - b.cost);
 
-    initDashboard(); 
+    renderKPIs();
+    renderCharts();
+    renderTable();
+    setupFilters();
+    
+    const hasData = filteredData.length > 0 || currentData.length > 0;
+    if (document.getElementById('emptyState')) document.getElementById('emptyState').style.display = hasData ? 'none' : 'flex';
+    if (document.getElementById('dashboardContent')) document.getElementById('dashboardContent').style.display = hasData ? 'block' : 'none';
+    if (document.getElementById('resetBtn')) document.getElementById('resetBtn').style.display = hasData ? 'flex' : 'none';
 }
 
 function calculateMetrics(data) {
@@ -192,93 +235,100 @@ function renderKPIs() {
     const unit = (displayMode === 'cost' ? '억' : '개');
     const update = (id, val) => {
         const el = document.getElementById(id);
-        if (el) { el.innerText = val; const card = el.closest('.kpi-card'); if(card) { card.style.animation = 'none'; card.offsetHeight; card.style.animation = 'fadeIn 0.4s ease-out'; } }
+        if (el) { el.innerText = val; }
     };
     update('statDomains', stats.domains.size); update('statSystems', stats.systems.size); update('statParts', stats.parts); update('statSpecs', stats.specs.size);
     update('totalBaseInv', `${stats.base.toLocaleString()} ${unit}`); update('totalActualInv', `${stats.actual.toLocaleString()} ${unit}`);
     update('totalSavingsInv', `${stats.savings.toLocaleString()} ${unit}`); update('totalCommonRate', `${stats.commonRate} %`);
 }
 
-function renderCharts() {
+function renderCharts(deltaOnly = false) {
     const stats = calculateMetrics(filteredData);
-    const commonOptions = { 
-        responsive: true, 
-        maintainAspectRatio: false, 
-        animation: { 
-            duration: 600, 
-            easing: 'easeOutQuart' 
-        }, 
-        plugins: { legend: { position: 'top' } } 
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } }
     };
-    
+    const updateMode = deltaOnly ? 'active' : undefined;
+
     const donutLabels = Object.keys(stats.bySystem);
     const donutValues = Object.values(stats.bySystem).map(s => s.actual);
     if (!charts.ratio) {
-        charts.ratio = new Chart(document.getElementById('systemRatioChart'), { 
-            type: 'doughnut', 
-            data: { labels: donutLabels, datasets: [{ data: donutValues, backgroundColor: ['#1e40af', '#0891b2', '#059669', '#d97706', '#7c3aed'] }] }, 
-            options: { ...commonOptions, plugins: { legend: { position: 'right' } } } 
+        charts.ratio = new Chart(document.getElementById('systemRatioChart'), {
+            type: 'doughnut',
+            data: { labels: donutLabels, datasets: [{ data: donutValues, backgroundColor: ['#1e40af', '#0891b2', '#059669', '#d97706', '#7c3aed'] }] },
+            options: { ...commonOptions, plugins: { legend: { position: 'right' } } }
         });
     } else {
         charts.ratio.data.labels = donutLabels;
         charts.ratio.data.datasets[0].data = donutValues;
-        charts.ratio.update();
+        charts.ratio.update(updateMode);
     }
 
     if (!charts.total) {
-        charts.total = new Chart(document.getElementById('totalCommonChart'), { 
-            type: 'bar', 
-            data: { labels: ['전체'], datasets: [{ label: '실제', data: [stats.actual], backgroundColor: '#1e40af' }, { label: '절감', data: [stats.savings], backgroundColor: '#10b981' }] }, 
-            options: { ...commonOptions, indexAxis: 'y', scales: { x: { stacked: true }, y: { stacked: true } } } 
+        charts.total = new Chart(document.getElementById('totalCommonChart'), {
+            type: 'bar',
+            data: { labels: ['전체'], datasets: [{ label: '실제', data: [stats.actual], backgroundColor: '#1e40af' }, { label: '절감', data: [stats.savings], backgroundColor: '#10b981' }] },
+            options: { ...commonOptions, indexAxis: 'y', scales: { x: { stacked: true }, y: { stacked: true } } }
         });
     } else {
         charts.total.data.datasets[0].data = [stats.actual];
         charts.total.data.datasets[1].data = [stats.savings];
-        charts.total.update();
+        charts.total.update(updateMode);
     }
 
     const sysLabels = Object.keys(stats.bySystem);
     const sysActual = Object.values(stats.bySystem).map(s => s.actual);
     const sysSavings = Object.values(stats.bySystem).map(s => s.base - s.actual);
     if (!charts.sys) {
-        charts.sys = new Chart(document.getElementById('systemCommonChart'), { 
-            type: 'bar', 
-            data: { labels: sysLabels, datasets: [{ label: '실제', data: sysActual, backgroundColor: '#1e40af' }, { label: '절감', data: sysSavings, backgroundColor: '#10b981' }] }, 
-            options: { ...commonOptions, scales: { x: { stacked: true }, y: { stacked: true } } } 
+        charts.sys = new Chart(document.getElementById('systemCommonChart'), {
+            type: 'bar',
+            data: { labels: sysLabels, datasets: [{ label: '실제', data: sysActual, backgroundColor: '#1e40af' }, { label: '절감', data: sysSavings, backgroundColor: '#10b981' }] },
+            options: { ...commonOptions, scales: { x: { stacked: true }, y: { stacked: true } } }
         });
     } else {
         charts.sys.data.labels = sysLabels;
         charts.sys.data.datasets[0].data = sysActual;
         charts.sys.data.datasets[1].data = sysSavings;
-        charts.sys.update();
+        charts.sys.update(updateMode);
     }
 
     const modelLabels = Object.keys(stats.byModel);
     const modelActual = Object.values(stats.byModel).map(m => m.actual);
     const modelSavings = Object.values(stats.byModel).map(m => m.base - m.actual);
     if (!charts.model) {
-        charts.model = new Chart(document.getElementById('modelCommonChart'), { 
-            type: 'bar', 
-            data: { labels: modelLabels, datasets: [{ label: '실제', data: modelActual, backgroundColor: '#1e40af' }, { label: '절감', data: modelSavings, backgroundColor: '#10b981' }] }, 
-            options: { ...commonOptions, scales: { x: { stacked: true }, y: { stacked: true } } } 
+        charts.model = new Chart(document.getElementById('modelCommonChart'), {
+            type: 'bar',
+            data: { labels: modelLabels, datasets: [{ label: '실제', data: modelActual, backgroundColor: '#1e40af' }, { label: '절감', data: modelSavings, backgroundColor: '#10b981' }] },
+            options: { ...commonOptions, scales: { x: { stacked: true }, y: { stacked: true } } }
         });
     } else {
         charts.model.data.labels = modelLabels;
         charts.model.data.datasets[0].data = modelActual;
         charts.model.data.datasets[1].data = modelSavings;
-        charts.model.update();
+        charts.model.update(updateMode);
     }
 }
 
 function toggleStatus(rowIndex, modelKey) {
     const item = filteredData[rowIndex];
     if (!item) return;
-    const targetStatus = item.models[modelKey] === '신규' ? '공용' : '신규';
+    
+    const currentStatus = item.models[modelKey];
+    // 3-state Cycle: '-' -> '신규' -> '공용' -> '-'
+    const statusMap = { "-": "신규", "신규": "공용", "공용": "-" };
+    const targetStatus = statusMap[currentStatus] || "-";
+    
     item.models[modelKey] = targetStatus;
     
-    const tag = document.querySelector(`[data-row="${rowIndex}"][data-model="${modelKey}"]`);
-    if (tag) { tag.innerText = targetStatus; tag.className = 'status-tag ' + (targetStatus === '신규' ? 'status-new' : 'status-common'); }
+    // Update the specific span in the DOM
+    const tag = document.querySelector(`span.status-tag[data-row="${rowIndex}"][data-model="${modelKey}"]`);
+    if (tag) {
+        tag.innerText = targetStatus;
+        tag.className = 'status-tag ' + (targetStatus === '신규' ? 'status-new' : (targetStatus === '공용' ? 'status-common' : 'status-none'));
+    }
     
+    // Update the actual investment cell for this row
     const actualCell = document.getElementById(`actual-${rowIndex}`);
     if (actualCell) {
         let rowActual = 0;
@@ -288,8 +338,9 @@ function toggleStatus(rowIndex, modelKey) {
         actualCell.innerText = rowActual.toLocaleString();
     }
 
+    // Refresh metrics and charts
     renderKPIs();
-    renderCharts();
+    renderCharts(true);
 }
 
 function renderTable() {
@@ -298,22 +349,30 @@ function renderTable() {
     if (!headerRow || !tbody || !filteredData.length) return;
     const models = Object.keys(filteredData[0].models);
     
-    headerRow.innerHTML = `<th>도메인</th><th>시스템</th><th>모듈러시스템</th><th>부품</th><th>사양</th><th>단가</th><th>실제투자비(억)</th>${models.map(m => `<th>${m}</th>`).join('')}`;
+    headerRow.innerHTML = `<th>도메인</th><th>시스템</th><th>모듈러시스템</th><th>부품</th><th>사양</th><th>단가</th><th>실제투자비(${displayMode === 'cost' ? '억' : '개'})</th>${models.map(m => `<th>${m}</th>`).join('')}`;
+    
     tbody.innerHTML = filteredData.map((item, idx) => {
         let rowActual = 0;
         Object.keys(item.models).forEach(m => {
             if (item.models[m] === '신규') rowActual += (displayMode === 'cost' ? item.cost : 1);
         });
+        
+        const vehicleCells = models.map(m => {
+            const status = item.models[m];
+            const className = status === '신규' ? 'status-new' : (status === '공용' ? 'status-common' : 'status-none');
+            return `<td><span class="status-tag ${className}" onclick="toggleStatus(${idx}, '${m}')" style="cursor:pointer" data-row="${idx}" data-model="${m}">${status}</span></td>`;
+        }).join('');
+
         return `
-        <tr style="animation-delay: ${idx * 0.05}s">
-            <td class="text-muted">${item.domain}</td><td>${item.system}</td><td>${item.modularSystem}</td><td style="font-weight:600">${item.part}</td><td class="text-muted">${item.spec}</td><td>${item.cost}</td>
+        <tr>
+            <td class="text-muted">${item.domain}</td>
+            <td>${item.system}</td>
+            <td>${item.modularSystem}</td>
+            <td style="font-weight:600">${item.part}</td>
+            <td class="text-muted">${item.spec}</td>
+            <td>${item.cost}</td>
             <td id="actual-${idx}" style="font-weight:700; color:var(--primary)">${rowActual.toLocaleString()}</td>
-            ${models.map(m => {
-                const status = item.models[m];
-                const className = status === '신규' ? 'status-new' : (status !== '-' ? 'status-common' : 'status-none');
-                const clickable = status !== '-' ? `onclick="toggleStatus(${idx}, '${m}')" style="cursor:pointer"` : '';
-                return `<td><span class="status-tag ${className}" ${clickable} data-row="${idx}" data-model="${m}">${status}</span></td>`;
-            }).join('')}
+            ${vehicleCells}
         </tr>`;
     }).join('');
 }
@@ -323,7 +382,7 @@ function setupFilters() {
     Object.entries(fields).forEach(([id, key]) => {
         const select = document.getElementById(id);
         if (!select) return;
-        const values = [...new Set(currentData.map(d => d[key]))];
+        const values = [...new Set(currentData.map(d => d[key]))].sort();
         const currentVal = select.value;
         while (select.options.length > 1) select.remove(1);
         values.forEach(v => { const opt = document.createElement('option'); opt.value = v; opt.innerText = v; select.appendChild(opt); });
