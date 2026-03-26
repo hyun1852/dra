@@ -270,6 +270,10 @@ footer { border-top:1px solid var(--border); padding-top:24px; margin-top:60px; 
 </footer>
 </div>
 
+<script type="module">
+import Anthropic from 'https://esm.sh/@anthropic-ai/sdk';
+window._Anthropic = Anthropic;
+</script>
 <script>
 const MEDIA_SPECS = {
   kakao_biz:    { name:'카카오 비즈보드',        fields:[{label:'메인카피',max:15},{label:'서브카피',max:19}] },
@@ -389,31 +393,17 @@ async function generate(){
   document.getElementById('results-area').innerHTML=`<hr class="results-divider"><div class="loading-wrap"><div class="spinner"></div><span class="loading-text">각 매체별 카피를 작성하고 있습니다...</span></div>`;
 
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':apiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-calls':'true'
-      },
-      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:4000, messages:[{role:'user',content:buildPrompt()}] })
+    const client = new window._Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4000,
+      messages: [{ role: 'user', content: buildPrompt() }]
     });
-    if(!res.ok){ const e=await res.json(); throw new Error(e.error?.message||`HTTP ${res.status}`); }
-    const data=await res.json();
-    const text=data.content.map(i=>i.text||'').join('');
-    const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+    const text = response.content.map(i=>i.text||'').join('');
+    const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
     renderResults(parsed.results, name);
   } catch(e){
-    const isCors = e instanceof TypeError && e.message.toLowerCase().includes('fetch');
-    const msg = isCors
-      ? `CORS/네트워크 오류: 브라우저가 직접 API 호출을 차단했습니다.<br><br>
-         <b>해결 방법:</b> 파일을 <code>file://</code>로 열지 말고 HTTP 서버로 열어주세요.<br>
-         터미널에서 아래 명령어 실행 후 표시된 주소로 접속하세요:<br>
-         <code>python3 -m http.server 8080</code><br>
-         → <b>http://localhost:8080/kolon_copy_generator.html</b>`
-      : `오류: ${e.message}<br><br>• API 키가 올바른지 확인해주세요 (sk-ant-... 형식)<br>• 잠시 후 다시 시도해주세요`;
-    document.getElementById('results-area').innerHTML=`<hr class="results-divider"><div class="error-box">${msg}</div>`;
+    document.getElementById('results-area').innerHTML=`<hr class="results-divider"><div class="error-box">오류: ${e.message}<br><br>• API 키가 올바른지 확인해주세요 (sk-ant-... 형식)<br>• 잠시 후 다시 시도해주세요</div>`;
   }
   btn.disabled=false; btn.textContent='Generate Copy';
 }
