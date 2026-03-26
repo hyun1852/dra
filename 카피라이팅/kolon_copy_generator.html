@@ -403,7 +403,13 @@ async function generate(){
     const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
     renderResults(parsed.results, name);
   } catch(e){
-    document.getElementById('results-area').innerHTML=`<hr class="results-divider"><div class="error-box">오류: ${e.message}<br><br>• API 키가 올바른지 확인해주세요 (sk-ant-... 형식)<br>• 잠시 후 다시 시도해주세요</div>`;
+    const msg = e.message||'';
+    const hint = msg.includes('credit balance')
+      ? `크레딧 부족: Anthropic 계정의 크레딧이 소진되었습니다.<br><br>→ <a href="https://console.anthropic.com/settings/billing" target="_blank" style="color:var(--olive-light);text-decoration:underline">console.anthropic.com/settings/billing</a> 에서 충전 후 다시 시도해주세요.`
+      : msg.includes('invalid x-api-key') || msg.includes('authentication')
+      ? `API 키 오류: 입력한 키가 올바르지 않습니다. sk-ant-... 형식인지 확인해주세요.`
+      : `오류: ${msg}<br><br>• 잠시 후 다시 시도해주세요`;
+    document.getElementById('results-area').innerHTML=`<hr class="results-divider"><div class="error-box">${hint}</div>`;
   }
   btn.disabled=false; btn.textContent='Generate Copy';
 }
