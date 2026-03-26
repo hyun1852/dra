@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KOLON SPORT — 카피 생성기</title>
+<title>KOLON SPORT — 카피 생성기 (Gemini)</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -171,7 +171,7 @@ footer { border-top:1px solid var(--border); padding-top:24px; margin-top:60px; 
 
 <div class="api-bar">
   <span class="api-bar-label">API KEY</span>
-  <input type="password" id="api_key" placeholder="sk-ant-api03-..." oninput="onApiKeyInput()">
+  <input type="password" id="api_key" placeholder="AIzaSy..." oninput="onApiKeyInput()">
   <span class="api-status empty" id="api-status">미입력</span>
   <button class="api-key-save" onclick="saveApiKey()">저장</button>
 </div>
@@ -270,10 +270,6 @@ footer { border-top:1px solid var(--border); padding-top:24px; margin-top:60px; 
 </footer>
 </div>
 
-<script type="module">
-import Anthropic from 'https://esm.sh/@anthropic-ai/sdk';
-window._Anthropic = Anthropic;
-</script>
 <script>
 const MEDIA_SPECS = {
   kakao_biz:    { name:'카카오 비즈보드',        fields:[{label:'메인카피',max:15},{label:'서브카피',max:19}] },
@@ -297,9 +293,9 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 
 // API KEY
-function onApiKeyInput(){ updateApiStatus(document.getElementById('api_key').value.trim().startsWith('sk-ant-')); }
+function onApiKeyInput(){ updateApiStatus(document.getElementById('api_key').value.trim().startsWith('AIza')); }
 function updateApiStatus(ok){ const el=document.getElementById('api-status'); el.textContent=ok?'연결됨':'미입력'; el.className='api-status '+(ok?'ok':'empty'); }
-function saveApiKey(){ const v=document.getElementById('api_key').value.trim(); if(!v)return; localStorage.setItem('ks_api_key',v); updateApiStatus(v.startsWith('sk-ant-')); alert('API 키가 저장되었습니다.'); }
+function saveApiKey(){ const v=document.getElementById('api_key').value.trim(); if(!v)return; localStorage.setItem('ks_api_key',v); updateApiStatus(v.startsWith('AIza')); alert('API 키가 저장되었습니다.'); }
 
 // TYPE / MEDIA
 function selectType(t,el){ selectedType=t; document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
@@ -382,7 +378,7 @@ ${buildMediaSpec()}
 // GENERATE
 async function generate(){
   const apiKey=document.getElementById('api_key').value.trim();
-  if(!apiKey){ alert('Anthropic API 키를 입력해주세요.'); return; }
+  if(!apiKey){ alert('Gemini API 키를 입력해주세요.'); return; }
   if(!selectedType){ alert('캠페인 유형을 선택해주세요.'); return; }
   if(!selectedMedia.size){ alert('매체를 하나 이상 선택해주세요.'); return; }
   const name=document.getElementById('product_name').value.trim();
@@ -393,21 +389,20 @@ async function generate(){
   document.getElementById('results-area').innerHTML=`<hr class="results-divider"><div class="loading-wrap"><div class="spinner"></div><span class="loading-text">각 매체별 카피를 작성하고 있습니다...</span></div>`;
 
   try{
-    const client = new window._Anthropic({ apiKey, dangerouslyAllowBrowser: true });
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4000,
-      messages: [{ role: 'user', content: buildPrompt() }]
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ contents:[{ parts:[{ text:buildPrompt() }] }] })
     });
-    const text = response.content.map(i=>i.text||'').join('');
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error?.message||`HTTP ${res.status}`);
+    const text = data.candidates[0].content.parts[0].text;
     const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
     renderResults(parsed.results, name);
   } catch(e){
     const msg = e.message||'';
-    const hint = msg.includes('credit balance')
-      ? `크레딧 부족: Anthropic 계정의 크레딧이 소진되었습니다.<br><br>→ <a href="https://console.anthropic.com/settings/billing" target="_blank" style="color:var(--olive-light);text-decoration:underline">console.anthropic.com/settings/billing</a> 에서 충전 후 다시 시도해주세요.`
-      : msg.includes('invalid x-api-key') || msg.includes('authentication')
-      ? `API 키 오류: 입력한 키가 올바르지 않습니다. sk-ant-... 형식인지 확인해주세요.`
+    const hint = msg.includes('API_KEY_INVALID') || msg.includes('invalid')
+      ? `API 키 오류: 키가 올바르지 않습니다. AIzaSy... 형식인지 확인해주세요.`
       : `오류: ${msg}<br><br>• 잠시 후 다시 시도해주세요`;
     document.getElementById('results-area').innerHTML=`<hr class="results-divider"><div class="error-box">${hint}</div>`;
   }
